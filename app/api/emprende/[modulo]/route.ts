@@ -5,11 +5,13 @@ import {
   roast,
   simulador,
   reto,
+  brief,
   QueNegocioInput,
   ValidarInput,
   RoastInput,
   SimuladorInput,
   RetoInput,
+  BriefInput,
 } from '@/lib/emprende/modules';
 
 export const runtime = 'nodejs';
@@ -22,6 +24,7 @@ const HANDLERS = {
   roast: (b: unknown) => roast(RoastInput.parse(b)),
   simulador: (b: unknown) => simulador(SimuladorInput.parse(b)),
   reto: (b: unknown) => reto(RetoInput.parse(b)),
+  brief: (b: unknown) => brief(BriefInput.parse(b)),
 } as const;
 
 type Modulo = keyof typeof HANDLERS;

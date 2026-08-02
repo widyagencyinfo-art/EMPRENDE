@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { ModuleTiles } from './module-tiles';
 import { Dashboard } from './dashboard';
 
-export default function EmprendeHome() {
+export default function RumboHome() {
   return (
     <div className="max-w-5xl mx-auto p-5 md:p-10">
-      {/* Centro de mando: tu rendimiento */}
+      {/* Panel: onboarding la primera vez, centro de mando después */}
       <Dashboard />
 
       {/* Herramientas */}
@@ -45,7 +45,7 @@ export default function EmprendeHome() {
       </div>
 
       <p className="text-center text-xs emp-dim mt-10">
-        Hecho para que dejes de darle vueltas y empieces de una vez. 🚀
+        Hecho para que dejes de darle vueltas y empieces de una vez.
       </p>
     </div>
   );

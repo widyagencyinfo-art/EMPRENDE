@@ -1,14 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { MODULOS, gradCss } from '@/lib/emprende/catalog';
-
-function ArrowIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="emp-tile-arrow">
-      <path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import { Ic, type IconName } from './icons';
 
 // Mueve el halo radial hacia el cursor actualizando --mx/--my.
 function onMove(e: React.MouseEvent<HTMLElement>) {
@@ -31,9 +24,9 @@ export function ModuleTiles() {
             ['--tile-c1' as string]: m.grad[0],
           }}
         >
-          <ArrowIcon />
+          <Ic name="arrowUpRight" size={18} className="emp-tile-arrow" />
           <span className="emp-tile-icon text-white" style={{ background: gradCss(m.grad) }}>
-            {m.emoji}
+            <Ic name={m.icon as IconName} size={24} />
           </span>
           <h3 className="font-semibold text-[15px] text-white">{m.nombre}</h3>
           <p className="text-sm emp-dim mt-1 leading-snug">{m.tagline}</p>
@@ -46,13 +39,13 @@ export function ModuleTiles() {
         className="emp-tile group"
         onMouseMove={onMove}
         style={{
-          ['--tile-grad' as string]: gradCss(['#8b5cf6', '#fb923c'], 90),
-          ['--tile-c1' as string]: '#8b5cf6',
+          ['--tile-grad' as string]: gradCss(['#5b8cff', '#4ade80'], 90),
+          ['--tile-c1' as string]: '#5b8cff',
         }}
       >
-        <ArrowIcon />
-        <span className="emp-tile-icon text-white" style={{ background: gradCss(['#8b5cf6', '#fb923c']) }}>
-          ✨
+        <Ic name="arrowUpRight" size={18} className="emp-tile-arrow" />
+        <span className="emp-tile-icon text-white" style={{ background: gradCss(['#5b8cff', '#4ade80']) }}>
+          <Ic name="sparkle" size={24} />
         </span>
         <h3 className="font-semibold text-[15px] text-white">Hazte Pro</h3>
         <p className="text-sm emp-dim mt-1 leading-snug">

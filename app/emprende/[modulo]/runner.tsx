@@ -2,11 +2,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { getModulo, gradCss, type ModuloSlug } from '@/lib/emprende/catalog';
 import { logRun } from '../stats';
+import { Resultado } from '../resultado';
+import { Ic, type IconName } from '../icons';
 
 type Val = string | number;
 type Answers = Record<string, Val>;
 
-type Card = { emoji: string; label: string; hint?: string; value: Val };
+type Card = { icon: IconName; label: string; hint?: string; value: Val };
 
 type Step =
   | {
@@ -37,11 +39,11 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         sub: 'Elige lo tuyo o escríbelo con tus palabras.',
         placeholder: 'Diseño, hablar con gente, programar, redes sociales...',
         cards: [
-          { emoji: '🎨', label: 'Diseño y contenido', hint: 'gráfico, vídeo, redes', value: 'Diseño gráfico, edición de vídeo y redes sociales' },
-          { emoji: '💻', label: 'Programar', hint: 'webs, apps, automatizar', value: 'Programar webs, apps y automatizaciones' },
-          { emoji: '🗣️', label: 'Vender y hablar', hint: 'con gente, negociar', value: 'Hablar con gente, vender y negociar' },
-          { emoji: '✂️', label: 'Hacer con las manos', hint: 'manualidades, producto', value: 'Manualidades y productos hechos a mano' },
-          { emoji: '🍳', label: 'Cocinar', hint: 'comida, repostería', value: 'Cocinar y repostería' },
+          { icon: 'palette', label: 'Diseño y contenido', hint: 'gráfico, vídeo, redes', value: 'Diseño gráfico, edición de vídeo y redes sociales' },
+          { icon: 'code', label: 'Programar', hint: 'webs, apps, automatizar', value: 'Programar webs, apps y automatizaciones' },
+          { icon: 'megaphone', label: 'Vender y hablar', hint: 'con gente, negociar', value: 'Hablar con gente, vender y negociar' },
+          { icon: 'scissors', label: 'Hacer con las manos', hint: 'manualidades, producto', value: 'Manualidades y productos hechos a mano' },
+          { icon: 'utensils', label: 'Cocinar', hint: 'comida, repostería', value: 'Cocinar y repostería' },
         ],
       },
       {
@@ -50,10 +52,10 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Cuánto tiempo puedes dedicarle?',
         sub: 'Sé realista: es mejor poco y constante.',
         opciones: [
-          { emoji: '🌙', label: 'Ratos sueltos', hint: '~5 h/semana', value: 5 },
-          { emoji: '⏰', label: 'Unas horas', hint: '~10 h/semana', value: 10 },
-          { emoji: '🔥', label: 'En serio', hint: '~20 h/semana', value: 20 },
-          { emoji: '🚀', label: 'A tope', hint: '40+ h/semana', value: 40 },
+          { icon: 'moon', label: 'Ratos sueltos', hint: '~5 h/semana', value: 5 },
+          { icon: 'clock', label: 'Unas horas', hint: '~10 h/semana', value: 10 },
+          { icon: 'zap', label: 'En serio', hint: '~20 h/semana', value: 20 },
+          { icon: 'rocket', label: 'A tope', hint: '40+ h/semana', value: 40 },
         ],
       },
       {
@@ -62,10 +64,10 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Cuánto puedes invertir para arrancar?',
         sub: 'Hay negocios geniales a coste casi cero.',
         opciones: [
-          { emoji: '🪙', label: 'A coste cero', hint: '0 €', value: 0 },
-          { emoji: '💵', label: 'Poquito', hint: 'hasta 100 €', value: 100 },
-          { emoji: '💶', label: 'Algo tengo', hint: '~300 €', value: 300 },
-          { emoji: '💰', label: 'Voy en serio', hint: '500 € o más', value: 500 },
+          { icon: 'coin', label: 'A coste cero', hint: '0 €', value: 0 },
+          { icon: 'banknote', label: 'Poquito', hint: 'hasta 100 €', value: 100 },
+          { icon: 'stack', label: 'Algo tengo', hint: '~300 €', value: 300 },
+          { icon: 'wallet', label: 'Voy en serio', hint: '500 € o más', value: 500 },
         ],
       },
       {
@@ -75,12 +77,12 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         sub: 'El sector donde te apetece trabajar.',
         placeholder: 'Moda, fitness, tecnología, ayudar a negocios locales...',
         cards: [
-          { emoji: '👗', label: 'Moda', value: 'Moda y marcas de ropa' },
-          { emoji: '💪', label: 'Fitness y salud', value: 'Fitness, salud y bienestar' },
-          { emoji: '📱', label: 'Tecnología', value: 'Tecnología y apps' },
-          { emoji: '🏪', label: 'Negocios locales', value: 'Ayudar a negocios locales a crecer' },
-          { emoji: '🍔', label: 'Comida', value: 'Comida y hostelería' },
-          { emoji: '🎮', label: 'Gaming y contenido', value: 'Gaming y creación de contenido' },
+          { icon: 'shirt', label: 'Moda', value: 'Moda y marcas de ropa' },
+          { icon: 'dumbbell', label: 'Fitness y salud', value: 'Fitness, salud y bienestar' },
+          { icon: 'phone', label: 'Tecnología', value: 'Tecnología y apps' },
+          { icon: 'store', label: 'Negocios locales', value: 'Ayudar a negocios locales a crecer' },
+          { icon: 'utensils', label: 'Comida', value: 'Comida y hostelería' },
+          { icon: 'gamepad', label: 'Gaming y contenido', value: 'Gaming y creación de contenido' },
         ],
       },
     ],
@@ -95,25 +97,25 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         sub: 'Elige un ejemplo para probar o cuéntame la tuya.',
         placeholder: 'Una app que conecta dueños de perros con paseadores de confianza...',
         cards: [
-          { emoji: '🐕', label: 'App de paseadores', hint: 'para dueños de perros', value: 'Una app que conecta dueños de perros con paseadores de confianza cerca de casa' },
-          { emoji: '🥗', label: 'Meal prep saludable', hint: 'para oficinistas', value: 'Servicio de comida saludable semanal preparada para oficinistas ocupados' },
-          { emoji: '👕', label: 'Ropa con diseños propios', hint: 'cultura urbana', value: 'Tienda online de camisetas con diseños propios sobre cultura urbana' },
+          { icon: 'paw', label: 'App de paseadores', hint: 'para dueños de perros', value: 'Una app que conecta dueños de perros con paseadores de confianza cerca de casa' },
+          { icon: 'leaf', label: 'Meal prep saludable', hint: 'para oficinistas', value: 'Servicio de comida saludable semanal preparada para oficinistas ocupados' },
+          { icon: 'shirt', label: 'Ropa con diseños propios', hint: 'cultura urbana', value: 'Tienda online de camisetas con diseños propios sobre cultura urbana' },
         ],
       },
     ],
   },
   roast: {
-    cta: 'Que me destrocen 💀',
+    cta: 'Que me destrocen',
     steps: [
       {
         field: 'idea',
         kind: 'textarea',
-        pregunta: 'Suéltala. Sin miedo. 💀',
+        pregunta: 'Suéltala. Sin miedo.',
         sub: 'Cuanto más honesto seas, más duro (y útil) será el roast.',
         placeholder: 'Vender cubitos de hielo premium para gente ocupada...',
         cards: [
-          { emoji: '🧊', label: 'Hielo premium', hint: 'para gente ocupada', value: 'Vender cubitos de hielo premium para gente ocupada' },
-          { emoji: '🐱', label: 'Red social de gatos', hint: 'solo para gatos', value: 'Una red social solo para gatos' },
+          { icon: 'cube', label: 'Hielo premium', hint: 'para gente ocupada', value: 'Vender cubitos de hielo premium para gente ocupada' },
+          { icon: 'paw', label: 'Red social de gatos', hint: 'solo para gatos', value: 'Una red social solo para gatos' },
         ],
       },
     ],
@@ -128,8 +130,8 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         sub: 'Cuéntame qué vendes y a quién.',
         placeholder: 'Agencia de gestión de redes sociales para restaurantes locales',
         cards: [
-          { emoji: '📱', label: 'Agencia de redes', hint: 'para restaurantes', value: 'Agencia de gestión de redes sociales para restaurantes locales' },
-          { emoji: '🌐', label: 'Webs para negocios', hint: 'locales sin web', value: 'Diseño de webs para negocios locales sin presencia online' },
+          { icon: 'megaphone', label: 'Agencia de redes', hint: 'para restaurantes', value: 'Agencia de gestión de redes sociales para restaurantes locales' },
+          { icon: 'globe', label: 'Webs para negocios', hint: 'locales sin web', value: 'Diseño de webs para negocios locales sin presencia online' },
         ],
       },
       {
@@ -139,10 +141,10 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         sub: 'Tu precio por cliente o por proyecto.',
         placeholder: '400€/mes por cliente',
         cards: [
-          { emoji: '💶', label: '20€/mes', hint: 'suscripción baja', value: '20€/mes' },
-          { emoji: '🔁', label: '50€ + 50€/mes', hint: 'entrada + cuota', value: '50€ la web + 50€/mes de mantenimiento' },
-          { emoji: '💰', label: '400€/mes', hint: 'por cliente', value: '400€/mes por cliente' },
-          { emoji: '🧾', label: '500€ el proyecto', hint: 'pago único', value: '500€ por proyecto' },
+          { icon: 'coin', label: '20€/mes', hint: 'suscripción baja', value: '20€/mes' },
+          { icon: 'repeat', label: '50€ + 50€/mes', hint: 'entrada + cuota', value: '50€ la web + 50€/mes de mantenimiento' },
+          { icon: 'banknote', label: '400€/mes', hint: 'por cliente', value: '400€/mes por cliente' },
+          { icon: 'receipt', label: '500€ el proyecto', hint: 'pago único', value: '500€ por proyecto' },
         ],
       },
     ],
@@ -157,8 +159,8 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         sub: 'Te montaré un plan semana a semana.',
         placeholder: 'Tienda online de camisetas con diseños propios',
         cards: [
-          { emoji: '👕', label: 'Tienda de camisetas', hint: 'diseños propios', value: 'Tienda online de camisetas con diseños propios' },
-          { emoji: '☕', label: 'Cafetería especialidad', hint: 'para llevar', value: 'Cafetería de especialidad para llevar en zona de oficinas' },
+          { icon: 'shirt', label: 'Tienda de camisetas', hint: 'diseños propios', value: 'Tienda online de camisetas con diseños propios' },
+          { icon: 'coffee', label: 'Cafetería especialidad', hint: 'para llevar', value: 'Cafetería de especialidad para llevar en zona de oficinas' },
         ],
       },
     ],
@@ -166,12 +168,12 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
 };
 
 const FRASES_PENSANDO = [
-  'Analizando tu idea a fondo...',
+  'Analizando tu caso a fondo...',
   'Mirando el tamaño del mercado...',
   'Estudiando a la competencia...',
   'Buscando el ángulo ganador...',
   'Echando las cuentas reales...',
-  'Puliendo los últimos detalles 🔥',
+  'Puliendo los últimos detalles...',
 ];
 
 export function Runner({ slug }: { slug: ModuloSlug }) {
@@ -209,7 +211,6 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
     await submit();
   }
 
-  // Elegir una tarjeta responde y avanza (o envía) automáticamente.
   function pick(field: string, value: Val) {
     const nextAnswers = { ...answers, [field]: value };
     setAnswers(nextAnswers);
@@ -233,8 +234,11 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || 'Error');
       setResultado(j.resultado);
-      // registrar en el centro de mando (XP, racha, notas)
-      logRun(slug, typeof j.resultado?.nota === 'number' ? j.resultado.nota : undefined);
+      // guardar la conversación completa en el panel (historial + XP)
+      logRun(slug, typeof j.resultado?.nota === 'number' ? j.resultado.nota : undefined, {
+        input: data,
+        output: j.resultado,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Algo salió mal');
     } finally {
@@ -263,10 +267,10 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
         >
           <div className="flex items-center gap-4">
             <span
-              className="grid h-14 w-14 place-items-center rounded-2xl text-3xl text-white shrink-0"
+              className="grid h-14 w-14 place-items-center rounded-2xl text-white shrink-0"
               style={{ background: gradCss(modulo.grad), boxShadow: '0 12px 26px -8px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.35)' }}
             >
-              {modulo.emoji}
+              <Ic name={modulo.icon as IconName} size={28} />
             </span>
             <div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">{modulo.nombre}</h1>
@@ -279,9 +283,11 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
       {resultado ? (
         <div className="emp-in">
           <div className="flex items-center justify-between mb-4">
-            <span className="emp-badge">✅ Listo · +25 XP</span>
+            <span className="emp-badge">
+              <Ic name="check" size={13} className="text-emerald-400" /> Guardado en tu panel · +25 XP
+            </span>
             <button onClick={reset} className="emp-btn-ghost text-xs px-4 py-2">
-              ↻ Volver a empezar
+              <Ic name="refresh" size={13} /> Volver a empezar
             </button>
           </div>
           <Resultado slug={slug} data={resultado} />
@@ -295,7 +301,12 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
             className="absolute inset-0 -z-10 opacity-50"
             style={{ background: `radial-gradient(70% 100% at 50% 0%, ${modulo.grad[0]}26, transparent 70%)` }}
           />
-          <div className="text-5xl mb-4">{modulo.emoji}</div>
+          <span
+            className="mx-auto grid h-16 w-16 place-items-center rounded-2xl text-white mb-5"
+            style={{ background: gradCss(modulo.grad), boxShadow: '0 16px 34px -10px rgba(0,0,0,.6)' }}
+          >
+            <Ic name={modulo.icon as IconName} size={32} />
+          </span>
           <h2 className="text-2xl md:text-3xl font-black text-white leading-tight max-w-md mx-auto">
             {total === 1 ? 'Una sola pregunta' : `${total} preguntas rápidas`} y la IA hace el resto
           </h2>
@@ -304,12 +315,12 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
             resultado accionable al momento.
           </p>
           <div className="flex flex-wrap justify-center gap-2 mt-5">
-            <span className="emp-badge">⚡ ~30 segundos</span>
-            <span className="emp-badge">🤖 IA real</span>
-            <span className="emp-badge">🎁 Gratis · sin registro</span>
+            <span className="emp-badge"><Ic name="zap" size={13} /> ~30 segundos</span>
+            <span className="emp-badge"><Ic name="brain" size={13} /> IA real</span>
+            <span className="emp-badge"><Ic name="check" size={13} /> Se guarda en tu panel</span>
           </div>
           <button onClick={() => setStarted(true)} className="emp-btn text-sm mt-7 px-10">
-            Empezar →
+            Empezar <Ic name="arrowRight" size={15} />
           </button>
         </div>
       ) : (
@@ -342,7 +353,6 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
             onPick={(v) => pick(step.field, v)}
             onNext={next}
             onBack={back}
-            showBack={i > 0 || true}
           />
 
           {error && (
@@ -358,6 +368,20 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
 
 /* ---------------- Un paso del wizard ---------------- */
 
+function CardBtn({ card, selected, onClick, dashed }: { card: Card; selected?: boolean; onClick: () => void; dashed?: boolean }) {
+  return (
+    <button type="button" className={`emp-choice big ${selected ? 'selected' : ''} ${dashed ? 'dashed' : ''}`} onClick={onClick}>
+      <span className="emp-choice-key" style={{ width: 38, height: 38, borderRadius: 12 }}>
+        <Ic name={card.icon} size={19} />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-semibold leading-tight">{card.label}</span>
+        {card.hint && <span className="block text-xs emp-dim mt-0.5">{card.hint}</span>}
+      </span>
+    </button>
+  );
+}
+
 function Paso({
   step,
   value,
@@ -368,7 +392,6 @@ function Paso({
   onPick,
   onNext,
   onBack,
-  showBack,
 }: {
   step: Step;
   value: Val | undefined;
@@ -379,7 +402,6 @@ function Paso({
   onPick: (v: Val) => void;
   onNext: () => void;
   onBack: () => void;
-  showBack: boolean;
 }) {
   const tieneCards = step.kind !== 'choice' && !!step.cards?.length;
   const [manual, setManual] = useState(step.kind !== 'choice' && !step.cards?.length);
@@ -398,50 +420,19 @@ function Paso({
 
       <div className="mt-6">
         {step.kind === 'choice' ? (
-          /* --- Opciones fijas --- */
           <div className="grid gap-3 sm:grid-cols-2">
             {step.opciones.map((op) => (
-              <button
-                key={op.label}
-                type="button"
-                className={`emp-choice big ${value === op.value ? 'selected' : ''}`}
-                onClick={() => onPick(op.value)}
-              >
-                <span className="emp-choice-emoji">{op.emoji}</span>
-                <span className="min-w-0">
-                  <span className="block font-semibold leading-tight">{op.label}</span>
-                  {op.hint && <span className="block text-xs emp-dim mt-0.5">{op.hint}</span>}
-                </span>
-              </button>
+              <CardBtn key={op.label} card={op} selected={value === op.value} onClick={() => onPick(op.value)} />
             ))}
           </div>
         ) : !manual && tieneCards ? (
-          /* --- Respuestas rápidas en tarjeta + "lo escribo yo" --- */
           <div className="grid gap-3 sm:grid-cols-2">
             {step.cards!.map((c) => (
-              <button
-                key={c.label}
-                type="button"
-                className={`emp-choice big ${value === c.value ? 'selected' : ''}`}
-                onClick={() => onPick(c.value)}
-              >
-                <span className="emp-choice-emoji">{c.emoji}</span>
-                <span className="min-w-0">
-                  <span className="block font-semibold leading-tight">{c.label}</span>
-                  {c.hint && <span className="block text-xs emp-dim mt-0.5">{c.hint}</span>}
-                </span>
-              </button>
+              <CardBtn key={c.label} card={c} selected={value === c.value} onClick={() => onPick(c.value)} />
             ))}
-            <button type="button" className="emp-choice big dashed" onClick={() => setManual(true)}>
-              <span className="emp-choice-emoji">✍️</span>
-              <span className="min-w-0">
-                <span className="block font-semibold leading-tight">Lo escribo yo</span>
-                <span className="block text-xs emp-dim mt-0.5">con mis palabras</span>
-              </span>
-            </button>
+            <CardBtn card={{ icon: 'pen', label: 'Lo escribo yo', hint: 'con mis palabras', value: '' }} dashed onClick={() => setManual(true)} />
           </div>
         ) : (
-          /* --- Escritura libre --- */
           <>
             {step.kind === 'textarea' ? (
               <textarea
@@ -480,16 +471,13 @@ function Paso({
         )}
       </div>
 
-      {/* Navegación */}
       <div className="mt-7 flex items-center gap-3">
-        {showBack && (
-          <button onClick={onBack} className="emp-btn-ghost text-sm px-5">
-            ← Atrás
-          </button>
-        )}
+        <button onClick={onBack} className="emp-btn-ghost text-sm px-5">
+          ← Atrás
+        </button>
         {(manual || !tieneCards) && step.kind !== 'choice' && (
           <button onClick={onNext} disabled={!filled} className="emp-btn flex-1 text-sm">
-            {isLast ? `${cta} →` : 'Siguiente →'}
+            {isLast ? cta : 'Siguiente'} <Ic name="arrowRight" size={15} />
           </button>
         )}
       </div>
@@ -511,8 +499,8 @@ function LoadingCard({ grad }: { grad: readonly [string, string] }) {
   return (
     <div className="emp-card p-6 emp-in">
       <div className="flex items-center gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl text-lg shrink-0" style={{ background: gradCss(grad) }}>
-          🤖
+        <span className="grid h-10 w-10 place-items-center rounded-xl text-white shrink-0" style={{ background: gradCss(grad) }}>
+          <Ic name="brain" size={20} />
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-white">{FRASES_PENSANDO[i]}</p>
@@ -530,238 +518,4 @@ function LoadingCard({ grad }: { grad: readonly [string, string] }) {
       </div>
     </div>
   );
-}
-
-/* ---------------- Render de resultados ---------------- */
-
-function notaColor(n: number) {
-  return n >= 7 ? '#22c55e' : n >= 5 ? '#f59e0b' : '#f43f5e';
-}
-
-function Ring({ n }: { n: number }) {
-  return (
-    <div className="emp-ring shrink-0" style={{ ['--ring-val' as string]: n * 10, ['--ring-color' as string]: notaColor(n) }}>
-      <span className="text-center">
-        <span className="block text-3xl font-black" style={{ color: notaColor(n) }}>
-          {n}
-        </span>
-        <span className="block text-[10px] emp-dim -mt-1">/10</span>
-      </span>
-    </div>
-  );
-}
-
-function Lista({ titulo, items }: { titulo: string; items: string[] }) {
-  return (
-    <div>
-      <h4 className="font-semibold text-sm mb-2 text-white">{titulo}</h4>
-      <ul className="space-y-2">
-        {items.map((it, i) => (
-          <li key={i} className="text-sm flex gap-2.5 text-white/85">
-            <span className="emp-grad-text font-bold shrink-0">→</span>
-            <span>{it}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function Bloque({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h4 className="font-semibold text-sm mb-1 text-white">{titulo}</h4>
-      <p className="text-sm emp-dim leading-relaxed">{children}</p>
-    </div>
-  );
-}
-
-function ShareBtn({ texto }: { texto: string }) {
-  const [copiado, setCopiado] = useState(false);
-  async function share() {
-    const full = `${texto}\n\nHecho con Emprende 🚀`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ text: full });
-      } else {
-        await navigator.clipboard.writeText(full);
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2000);
-      }
-    } catch {
-      /* cancelado */
-    }
-  }
-  return (
-    <button
-      onClick={share}
-      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-white/10 transition-colors shrink-0"
-    >
-      {copiado ? '✓ Copiado' : '📤 Compartir'}
-    </button>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="emp-inner p-3.5">
-      <div className="text-xs emp-dim">{label}</div>
-      <div className="font-bold text-white mt-0.5">{value}</div>
-    </div>
-  );
-}
-
-function Resultado({ slug, data }: { slug: ModuloSlug; data: any }) {
-  if (slug === 'que-negocio') {
-    return (
-      <div className="emp-card p-6 space-y-5 emp-stagger">
-        <div>
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-xl font-black text-white">{data.match}</h3>
-            <ShareBtn texto={`Mi negocio ideal: ${data.match} (encaje ${data.encaje}%)`} />
-          </div>
-          <span className="emp-badge mt-3" style={{ borderColor: 'rgba(139,92,246,.4)', background: 'rgba(139,92,246,.16)', color: '#c4b5fd' }}>
-            🎯 Encaje contigo: {data.encaje}%
-          </span>
-        </div>
-        <Bloque titulo="Por qué encaja contigo">{data.porQue}</Bloque>
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label="Potencial mensual" value={data.potencialMensual} />
-          <Stat label="Arranque" value={data.tiempoArranque} />
-        </div>
-        <Lista titulo="Primeros pasos" items={data.primerosPasos} />
-        <div>
-          <h4 className="font-semibold text-sm mb-2 text-white">Alternativas</h4>
-          <div className="space-y-2">
-            {data.alternativas.map((a: any, i: number) => (
-              <p key={i} className="text-sm emp-inner px-3.5 py-2.5">
-                <span className="font-semibold text-white">{a.negocio}</span>{' '}
-                <span className="emp-dim">— {a.motivo}</span>
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (slug === 'validar') {
-    return (
-      <div className="emp-card p-6 space-y-5 emp-stagger">
-        <div className="flex items-center gap-4">
-          <Ring n={data.nota} />
-          <div className="min-w-0">
-            <h3 className="text-lg font-black leading-tight text-white">{data.veredicto}</h3>
-            <div className="mt-2">
-              <ShareBtn texto={`Mi idea sacó un ${data.nota}/10 — ${data.veredicto}`} />
-            </div>
-          </div>
-        </div>
-        <hr className="emp-hr" />
-        <Bloque titulo="📊 Mercado">{data.mercado}</Bloque>
-        <Bloque titulo="⚔️ Competencia">{data.competencia}</Bloque>
-        <Bloque titulo="🎯 A quién vendérselo primero">{data.publicoIdeal}</Bloque>
-        <Lista titulo="⚠️ Riesgos" items={data.riesgos} />
-        <Lista titulo="✅ Primeros pasos para validarla" items={data.primerosPasos} />
-        <div className="rounded-2xl p-4 border" style={{ borderColor: 'rgba(217,70,239,.3)', background: 'linear-gradient(120deg, rgba(139,92,246,.16), rgba(217,70,239,.14))' }}>
-          <h4 className="font-semibold text-sm mb-1 text-white">✨ El giro que la haría mejor</h4>
-          <p className="text-sm text-white/85">{data.comoMejorarla}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (slug === 'roast') {
-    return (
-      <div className="emp-card p-6 space-y-5 emp-stagger">
-        <div className="flex items-center gap-4">
-          <Ring n={data.nota} />
-          <ShareBtn texto={data.fraseCompartible} />
-        </div>
-        <p className="text-base italic border-l-4 pl-4 py-1 text-white/90" style={{ borderColor: '#d946ef' }}>
-          {data.roast}
-        </p>
-        <Lista titulo="Puntos débiles" items={data.puntosDebiles} />
-        <div className="emp-inner p-4">
-          <h4 className="font-semibold text-sm mb-1 text-white">🛟 Pero podría funcionar si...</h4>
-          <p className="text-sm emp-dim">{data.peroPodriaFuncionarSi}</p>
-        </div>
-        <div className="rounded-2xl p-4 text-center font-semibold text-white" style={{ background: gradCss(['#d946ef', '#f43f5e']), boxShadow: '0 16px 34px -14px rgba(217,70,239,.6)' }}>
-          “{data.fraseCompartible}”
-        </div>
-      </div>
-    );
-  }
-
-  if (slug === 'simulador') {
-    const max = Math.max(...data.escenarios.map((e: any) => e.ingresosMes), 1);
-    return (
-      <div className="emp-card p-6 space-y-5 emp-stagger">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-lg font-black text-white">💰 Proyección de ingresos</h3>
-          <ShareBtn
-            texto={`Mi negocio podría dar ${
-              data.escenarios.find((e: any) => /real/i.test(e.nombre))?.beneficioMes ?? data.escenarios[0]?.beneficioMes
-            }€/mes de beneficio`}
-          />
-        </div>
-        <Lista titulo="Supuestos" items={data.supuestos} />
-        <div className="space-y-4">
-          {data.escenarios.map((e: any, i: number) => (
-            <div key={i}>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span className="font-semibold text-white">{e.nombre}</span>
-                <span className="emp-dim">
-                  {e.clientesMes} clientes ·{' '}
-                  <span className="font-semibold text-emerald-400">{e.beneficioMes}€/mes</span>
-                </span>
-              </div>
-              <div className="emp-bar">
-                <i style={{ width: `${Math.round((e.ingresosMes / max) * 100)}%` }} />
-              </div>
-              <div className="text-xs emp-dim mt-1">
-                Ingresos {e.ingresosMes}€ · Costes {e.costesMes}€
-              </div>
-            </div>
-          ))}
-        </div>
-        <Bloque titulo="⏳ Recuperar la inversión">{data.mesesRecuperarInversion}</Bloque>
-        <Lista titulo="🚀 Palancas para ganar más" items={data.palancas} />
-      </div>
-    );
-  }
-
-  if (slug === 'reto') {
-    return (
-      <div className="emp-card p-6 space-y-5 emp-stagger">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg font-black text-white">🎯 {data.objetivo}</h3>
-          <ShareBtn texto={`Mi reto de 30 días: ${data.objetivo}`} />
-        </div>
-        {data.semanas.map((s: any) => (
-          <div key={s.semana} className="emp-inner p-4">
-            <h4 className="font-semibold text-sm mb-2.5 flex items-center gap-2 text-white">
-              <span className="inline-block rounded-lg px-2 py-0.5 text-xs text-white" style={{ background: gradCss(['#8b5cf6', '#d946ef']) }}>
-                Semana {s.semana}
-              </span>
-              {s.foco}
-            </h4>
-            <ul className="space-y-2">
-              {s.tareas.map((t: string, i: number) => (
-                <li key={i} className="text-sm flex gap-2.5 text-white/85">
-                  <span className="emp-dim mt-0.5 shrink-0">☐</span>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        <div className="rounded-2xl p-4 text-white" style={{ background: gradCss(['#8b5cf6', '#d946ef']), boxShadow: '0 16px 34px -14px rgba(139,92,246,.6)' }}>
-          <span className="font-semibold">🏁 Al día 30:</span> {data.hito}
-        </div>
-      </div>
-    );
-  }
-
-  return null;
 }

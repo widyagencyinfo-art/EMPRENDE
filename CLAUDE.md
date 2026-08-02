@@ -1,4 +1,4 @@
-# Emprende — memoria del proyecto
+# Rumbo (antes Emprende) — memoria del proyecto
 
 Herramientas con IA para **emprendedores jóvenes**: validar tu idea, descubrir qué
 negocio montar, roast, simulador de ingresos y reto de 30 días. Modelo freemium

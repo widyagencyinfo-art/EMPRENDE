@@ -1,6 +1,6 @@
-# Emprende
+# Rumbo
 
-Herramientas con IA para emprendedores jóvenes: validar tu idea, descubrir qué
+Rumbo (antes "Emprende"): plataforma IA para emprendedores jóvenes: validar tu idea, descubrir qué
 negocio montar, roast, simulador de ingresos y reto de 30 días.
 
 **Stack:** Next.js 15 (App Router) · Claude (Anthropic) · Tailwind. Deploy en Vercel.

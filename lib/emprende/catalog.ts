@@ -4,42 +4,43 @@
  * (sidebar, formularios) pueden usar esta lista sin arrastrar el SDK.
  *
  * `grad` = [color inicio, color fin] del acento del módulo (identidad visual).
+ * `icon` = nombre del icono SVG propio (app/emprende/icons.tsx).
  */
 export const MODULOS = [
   {
     slug: 'que-negocio',
     nombre: '¿Qué negocio montar?',
     tagline: 'Descubre el negocio que encaja contigo',
-    emoji: '🧭',
-    grad: ['#6366f1', '#0ea5e9'],
+    icon: 'compass',
+    grad: ['#5b8cff', '#22d3ee'],
   },
   {
     slug: 'validar',
     nombre: 'Validar idea',
     tagline: '¿Es buena tu idea? Nota + análisis honesto',
-    emoji: '🔥',
-    grad: ['#f97316', '#ef4444'],
+    icon: 'target',
+    grad: ['#22c55e', '#14b8a6'],
   },
   {
     slug: 'roast',
     nombre: 'Roast a tu idea',
     tagline: 'La IA sin filtros te destroza (y te rescata)',
-    emoji: '💀',
-    grad: ['#d946ef', '#f43f5e'],
+    icon: 'flame',
+    grad: ['#f43f5e', '#fb923c'],
   },
   {
     slug: 'simulador',
     nombre: 'Simulador de ingresos',
     tagline: '¿Cuánto puedes ganar de verdad?',
-    emoji: '💰',
-    grad: ['#10b981', '#14b8a6'],
+    icon: 'coins',
+    grad: ['#f59e0b', '#fbbf24'],
   },
   {
     slug: 'reto',
     nombre: 'Reto 30 días',
     tagline: 'De 0 a tus primeros clientes en un mes',
-    emoji: '🚀',
-    grad: ['#8b5cf6', '#d946ef'],
+    icon: 'rocket',
+    grad: ['#8b5cf6', '#6366f1'],
   },
 ] as const;
 

@@ -4,7 +4,14 @@
  * Cada análisis completado suma XP y alimenta el centro de mando de la home.
  */
 
-export type RunLog = { slug: string; t: number; nota?: number };
+export type RunLog = {
+  slug: string;
+  t: number;
+  nota?: number;
+  /** entrada del usuario y respuesta completa de la IA (historial de conversaciones) */
+  input?: Record<string, unknown>;
+  output?: unknown;
+};
 
 const KEY = 'emprende_runs_v1';
 const XP_POR_ANALISIS = 25;
@@ -30,13 +37,22 @@ export function getRuns(): RunLog[] {
   }
 }
 
-export function logRun(slug: string, nota?: number) {
+export function logRun(
+  slug: string,
+  nota?: number,
+  convo?: { input: Record<string, unknown>; output: unknown }
+) {
   if (typeof window === 'undefined') return;
   try {
     const runs = getRuns();
-    runs.push({ slug, t: Date.now(), ...(typeof nota === 'number' ? { nota } : {}) });
-    // cap para no crecer sin límite
-    window.localStorage.setItem(KEY, JSON.stringify(runs.slice(-100)));
+    runs.push({
+      slug,
+      t: Date.now(),
+      ...(typeof nota === 'number' ? { nota } : {}),
+      ...(convo ?? {}),
+    });
+    // cap para no crecer sin límite (los resultados completos pesan)
+    window.localStorage.setItem(KEY, JSON.stringify(runs.slice(-60)));
   } catch {
     /* storage lleno o bloqueado: no pasa nada */
   }

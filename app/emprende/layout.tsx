@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { EmprendeSidebar, EmprendeMobileNav } from './sidebar';
 
 export const metadata: Metadata = {
-  title: 'Emprende — tu copiloto para montar tu negocio',
+  title: 'Rumbo — tu copiloto para emprender con foco',
   description:
-    'Valida tu idea, descubre qué negocio montar y lanza tu proyecto con IA. Para emprendedores jóvenes.',
+    'Tu plan, tu foco y tu ruta hasta tu objetivo de ingresos. IA real para emprendedores jóvenes.',
 };
 
 // Panel público del producto Emprende. Independiente del panel interno de Widy.

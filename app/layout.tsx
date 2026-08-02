@@ -5,9 +5,9 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Emprende — tu copiloto para montar tu negocio',
+  title: 'Rumbo — tu copiloto para emprender con foco',
   description:
-    'Valida tu idea, descubre qué negocio montar y lanza tu proyecto con IA. Para emprendedores jóvenes.',
+    'Tu plan, tu foco y tu ruta hasta tu objetivo de ingresos. IA real para emprendedores jóvenes.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

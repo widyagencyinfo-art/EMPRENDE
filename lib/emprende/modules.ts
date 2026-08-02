@@ -10,7 +10,7 @@ import { generateStructured } from '@/lib/ai/client';
  */
 
 // Preámbulo de marca compartido — define el "quién habla".
-const VOZ = `Eres el copiloto de EMPRENDE, la plataforma para emprendedores jóvenes.
+const VOZ = `Eres el copiloto de RUMBO, la plataforma para emprendedores jóvenes.
 Hablas español de España, directo, cercano y motivador — como un mentor que ha
 montado negocios de verdad, no como un libro de texto. Nada de humo ni de frases
 de coach vacías. Cada cosa que dices es concreta, honesta y accionable. Piensas en
@@ -204,6 +204,59 @@ primeros clientes o primeros euros). Divide el mes en 4 semanas, cada una con un
 foco y tareas concretas y accionables (nada vago). Termina con el hito que habrá
 conseguido al acabar. Que sea un plan que de verdad pueda seguir alguien con poco
 tiempo.`,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* 6. BRIEF INICIAL  — el plan personalizado tras el registro         */
+/* ------------------------------------------------------------------ */
+
+export const BriefInput = z.object({
+  nombre: z.string(),
+  area: z.string(), // a qué se dedica / quiere dedicarse
+  experiencia: z.string(), // en qué punto está
+  dineroDisponible: z.number(), // capital para invertir
+  objetivoMensual: z.number(), // objetivo de ingresos €/mes
+  horasSemana: z.number(),
+  bloqueo: z.string(), // qué le frena ahora mismo
+});
+export type BriefInput = z.infer<typeof BriefInput>;
+
+const BriefOutput = z.object({
+  diagnostico: z.string(), // lectura honesta de su situación, 2-3 frases, personal
+  focoSemana: z.string(), // LA única cosa en la que centrarse esta semana (imperativo)
+  acciones: z.array(z.string()), // 3-5 acciones concretas para esta semana
+  ruta: z.array(
+    z.object({
+      hito: z.string(), // ej "Primer euro", "300€/mes"
+      como: z.string(), // cómo llegar a ese hito, 1 frase
+    })
+  ), // 3-4 hitos progresivos desde donde está hasta su objetivo mensual
+  consejo: z.string(), // frase de mentor, directa, sin humo
+});
+export type BriefOutput = z.infer<typeof BriefOutput>;
+
+export function brief(input: BriefInput) {
+  return generateStructured({
+    schema: BriefOutput,
+    effort: 'medium',
+    maxTokens: 4000,
+    system: VOZ,
+    prompt: `${input.nombre} acaba de entrar en RUMBO. Su perfil:
+- Área: ${input.area}
+- Punto en el que está: ${input.experiencia}
+- Capital disponible para invertir: ${input.dineroDisponible}€
+- Objetivo de ingresos: ${input.objetivoMensual}€/mes
+- Tiempo disponible: ${input.horasSemana} h/semana
+- Lo que le frena ahora mismo: ${input.bloqueo}
+
+Hazle su plan de arranque personalizado. Háblale de tú, por su nombre al menos
+una vez. El diagnóstico debe ser honesto con su situación real (capital, tiempo,
+punto de partida vs objetivo). El foco de la semana es UNA sola cosa, imperativa
+y concreta. Las acciones son de esta semana, no genéricas. La ruta son 3-4 hitos
+progresivos y realistas desde donde está HOY hasta su objetivo de ${input.objetivoMensual}€/mes
+(el primero debe ser alcanzable en días o pocas semanas). El consejo, directo al
+grano según su bloqueo.`,
   });
 }
 

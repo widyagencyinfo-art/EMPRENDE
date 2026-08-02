@@ -11,7 +11,7 @@ const PLANES = [
       '1 validación de idea al día',
       'Roast a tu idea',
       'Descubre qué negocio montar',
-      'Resultados con marca Emprende',
+      'Resultados con marca Rumbo',
     ],
     cta: 'Empezar gratis',
     href: '/emprende',
@@ -50,7 +50,7 @@ export default function ProPage() {
   return (
     <div className="max-w-5xl mx-auto p-5 md:p-10">
       <div className="text-center mb-12 emp-in">
-        <span className="emp-badge mb-4">✨ Planes</span>
+        <span className="emp-badge mb-4">Planes</span>
         <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
           Empieza gratis. Sube a <span className="emp-grad-text">Pro</span>
           <br className="hidden md:block" /> cuando vayas en serio.
@@ -68,9 +68,9 @@ export default function ProPage() {
             style={
               p.destacado
                 ? {
-                    border: '1.5px solid rgba(217,70,239,.5)',
-                    boxShadow: '0 30px 70px -24px rgba(139,92,246,.6), 0 0 0 1px rgba(217,70,239,.2)',
-                    background: 'linear-gradient(180deg, rgba(139,92,246,.12), rgba(255,255,255,.02))',
+                    border: '1.5px solid rgba(34,211,238,.5)',
+                    boxShadow: '0 30px 70px -24px rgba(91,140,255,.6), 0 0 0 1px rgba(34,211,238,.2)',
+                    background: 'linear-gradient(180deg, rgba(91,140,255,.12), rgba(255,255,255,.02))',
                   }
                 : undefined
             }
@@ -78,9 +78,9 @@ export default function ProPage() {
             {p.destacado && (
               <span
                 className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3.5 py-1 text-xs font-semibold text-white whitespace-nowrap"
-                style={{ background: gradCss(['#8b5cf6', '#d946ef']), boxShadow: '0 8px 20px -6px rgba(217,70,239,.7)' }}
+                style={{ background: gradCss(['#5b8cff', '#22d3ee']), boxShadow: '0 8px 20px -6px rgba(34,211,238,.7)' }}
               >
-                ⭐ Más popular
+                Más popular
               </span>
             )}
             <h2 className="font-bold text-lg text-white">{p.nombre}</h2>
