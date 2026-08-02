@@ -10,7 +10,7 @@ import { generateStructured } from '@/lib/ai/client';
  */
 
 // Preámbulo de marca compartido — define el "quién habla".
-const VOZ = `Eres el copiloto de RUMBO, la plataforma para emprendedores jóvenes.
+const VOZ = `Eres el copiloto de EMPRENDIA, la plataforma para emprendedores jóvenes.
 Hablas español de España, directo, cercano y motivador — como un mentor que ha
 montado negocios de verdad, no como un libro de texto. Nada de humo ni de frases
 de coach vacías. Cada cosa que dices es concreta, honesta y accionable. Piensas en
@@ -242,7 +242,7 @@ export function brief(input: BriefInput) {
     effort: 'medium',
     maxTokens: 4000,
     system: VOZ,
-    prompt: `${input.nombre} acaba de entrar en RUMBO. Su perfil:
+    prompt: `${input.nombre} acaba de entrar en EMPRENDIA. Su perfil:
 - Área: ${input.area}
 - Punto en el que está: ${input.experiencia}
 - Capital disponible para invertir: ${input.dineroDisponible}€

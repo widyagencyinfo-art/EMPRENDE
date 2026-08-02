@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { getModulo, gradCss, type ModuloSlug } from '@/lib/emprende/catalog';
 import { computeStats, getRuns, haceCuanto, type RunLog } from './stats';
 import { getPerfil, updatePerfil, type Perfil } from './perfil';
-import { Onboarding } from './onboarding';
 import { Resultado, notaColor } from './resultado';
 import { Ic, type IconName } from './icons';
 
@@ -30,8 +29,15 @@ export function Dashboard() {
     );
   }
 
-  // Sin perfil → registro (onboarding)
-  if (!perfil) return <Onboarding onDone={refresh} />;
+  // Sin perfil → RequireCuenta (en el layout) redirige a /entrar; mientras, esqueleto
+  if (!perfil) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-4">
+        <div className="emp-skeleton h-10 w-2/3" />
+        <div className="emp-skeleton h-40 w-full" />
+      </div>
+    );
+  }
 
   return <Panel perfil={perfil} runs={runs} onChange={refresh} />;
 }

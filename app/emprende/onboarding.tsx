@@ -111,8 +111,8 @@ const FRASES_PLAN = [
   'Afinando el plan...',
 ];
 
-export function Onboarding({ onDone }: { onDone: () => void }) {
-  const [fase, setFase] = useState<'intro' | 'quiz' | 'plan'>('intro');
+export function Onboarding({ onDone, sinIntro = false }: { onDone: () => void; sinIntro?: boolean }) {
+  const [fase, setFase] = useState<'intro' | 'quiz' | 'plan'>(sinIntro ? 'quiz' : 'intro');
   const [i, setI] = useState(0);
   const [datos, setDatos] = useState<Record<string, string | number>>({});
   const [error, setError] = useState<string | null>(null);
@@ -196,7 +196,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             <Ic name="logo" size={34} />
           </span>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
-            Bienvenido a <span className="emp-grad-text">Rumbo</span>
+            Bienvenido a <span className="emp-grad-text">emprendIA</span>
           </h1>
           <p className="emp-dim mt-4 max-w-sm mx-auto leading-relaxed">
             Cuéntame quién eres y a dónde quieres llegar, y te monto un plan de
@@ -209,7 +209,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             <span className="emp-badge"><Ic name="check" size={13} /> Gratis</span>
           </div>
           <button onClick={() => setFase('quiz')} className="emp-btn text-sm mt-8 px-10">
-            Crear mi rumbo <Ic name="arrowRight" size={15} />
+            Crear mi cuenta <Ic name="arrowRight" size={15} />
           </button>
         </div>
       </div>

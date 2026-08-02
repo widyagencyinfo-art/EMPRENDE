@@ -5,9 +5,9 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Rumbo — tu copiloto para emprender con foco',
+  title: 'emprendIA — la app de IA para emprendedores',
   description:
-    'Tu plan, tu foco y tu ruta hasta tu objetivo de ingresos. IA real para emprendedores jóvenes.',
+    'Valida tu idea, descubre qué negocio montar y sigue tu ruta hasta tu objetivo de ingresos. La IA que ayuda a los emprendedores a facturar.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

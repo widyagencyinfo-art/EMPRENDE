@@ -29,7 +29,7 @@ export function EmprendeSidebar() {
         <Link href="/emprende" className="flex items-center gap-2.5">
           <Logo />
           <span className="font-bold text-lg tracking-tight text-white">
-            Rumbo<span className="emp-grad-text">.</span>
+            emprend<span className="emp-grad-text">IA</span>
           </span>
         </Link>
       </div>
@@ -103,7 +103,7 @@ export function EmprendeMobileNav() {
       <div className="flex items-center justify-between h-14 px-4">
         <Link href="/emprende" className="flex items-center gap-2">
           <Logo size="sm" />
-          <span className="font-bold tracking-tight text-white">Rumbo</span>
+          <span className="font-bold tracking-tight text-white">emprend<span className="emp-grad-text">IA</span></span>
         </Link>
         <Link href="/emprende/pro" className="emp-btn px-3 py-1.5 text-xs">
           <Ic name="sparkle" size={13} /> Pro

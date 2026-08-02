@@ -61,7 +61,7 @@ function Bloque({ titulo, icon, children }: { titulo: string; icon?: IconName; c
 function ShareBtn({ texto }: { texto: string }) {
   const [copiado, setCopiado] = useState(false);
   async function share() {
-    const full = `${texto}\n\nHecho con Rumbo`;
+    const full = `${texto}\n\nHecho con emprendIA`;
     try {
       if (navigator.share) {
         await navigator.share({ text: full });
