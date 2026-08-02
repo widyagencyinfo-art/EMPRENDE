@@ -1,63 +1,132 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getModulo, gradCss, type ModuloSlug } from '@/lib/emprende/catalog';
 
-type Fields = Record<string, string | number>;
+type Val = string | number;
+type Answers = Record<string, Val>;
 
-type Campo = { name: string; label: string; type: 'text' | 'textarea' | 'number'; placeholder: string };
-type Ejemplo = { label: string; values: Fields };
+type Step =
+  | {
+      field: string;
+      kind: 'text' | 'textarea';
+      pregunta: string;
+      sub?: string;
+      placeholder: string;
+      sugerencias?: string[];
+    }
+  | {
+      field: string;
+      kind: 'choice';
+      pregunta: string;
+      sub?: string;
+      opciones: { emoji?: string; label: string; hint?: string; value: Val }[];
+    };
 
-const CONFIG: Record<
-  ModuloSlug,
-  { campos: Campo[]; cta: string; ejemplos: Ejemplo[] }
-> = {
+// Cada módulo se convierte en una conversación de N preguntas.
+const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
   'que-negocio': {
     cta: 'Descubrir mi negocio',
-    campos: [
-      { name: 'skills', label: '¿Qué se te da bien?', type: 'textarea', placeholder: 'Diseño, hablar con gente, programar, redes sociales...' },
-      { name: 'horasSemana', label: 'Horas por semana que puedes dedicar', type: 'number', placeholder: '10' },
-      { name: 'presupuesto', label: 'Presupuesto para empezar (€)', type: 'number', placeholder: '300' },
-      { name: 'intereses', label: '¿Qué te interesa o te gusta?', type: 'textarea', placeholder: 'Moda, fitness, tecnología, ayudar a negocios locales...' },
-    ],
-    ejemplos: [
-      { label: '🎨 Creativo con redes', values: { skills: 'Diseño gráfico, edición de vídeo y redes sociales', horasSemana: 15, presupuesto: 300, intereses: 'Moda, marcas locales y contenido' } },
-      { label: '💻 Perfil técnico', values: { skills: 'Programar webs y automatizaciones', horasSemana: 20, presupuesto: 500, intereses: 'Ayudar a negocios locales con tecnología' } },
+    steps: [
+      {
+        field: 'skills',
+        kind: 'textarea',
+        pregunta: '¿Qué se te da bien?',
+        sub: 'Tus habilidades, lo que la gente te pide o lo que disfrutas haciendo.',
+        placeholder: 'Diseño, hablar con gente, programar, redes sociales...',
+        sugerencias: ['Diseño y redes', 'Programar', 'Hablar y vender', 'Manualidades', 'Cocinar'],
+      },
+      {
+        field: 'horasSemana',
+        kind: 'choice',
+        pregunta: '¿Cuánto tiempo puedes dedicarle?',
+        sub: 'Sé realista: es mejor poco y constante.',
+        opciones: [
+          { emoji: '🌙', label: 'Ratos sueltos', hint: '~5 h/semana', value: 5 },
+          { emoji: '⏰', label: 'Unas horas', hint: '~10 h/semana', value: 10 },
+          { emoji: '🔥', label: 'En serio', hint: '~20 h/semana', value: 20 },
+          { emoji: '🚀', label: 'A tope', hint: '40+ h/semana', value: 40 },
+        ],
+      },
+      {
+        field: 'presupuesto',
+        kind: 'choice',
+        pregunta: '¿Cuánto puedes invertir para arrancar?',
+        sub: 'Hay negocios geniales a coste casi cero.',
+        opciones: [
+          { emoji: '🪙', label: 'A coste cero', hint: '0 €', value: 0 },
+          { emoji: '💵', label: 'Poquito', hint: 'hasta 100 €', value: 100 },
+          { emoji: '💶', label: 'Algo tengo', hint: '~300 €', value: 300 },
+          { emoji: '💰', label: 'Voy en serio', hint: '500 € o más', value: 500 },
+        ],
+      },
+      {
+        field: 'intereses',
+        kind: 'textarea',
+        pregunta: '¿Qué temas te tiran?',
+        sub: 'El sector donde te apetece trabajar. Vale más de uno.',
+        placeholder: 'Moda, fitness, tecnología, ayudar a negocios locales...',
+        sugerencias: ['Moda', 'Fitness y salud', 'Tecnología', 'Negocios locales', 'Comida', 'Gaming'],
+      },
     ],
   },
   validar: {
     cta: 'Validar mi idea',
-    campos: [{ name: 'idea', label: 'Tu idea de negocio', type: 'textarea', placeholder: 'Una app que conecta dueños de perros con paseadores de confianza...' }],
-    ejemplos: [
-      { label: '🐕 App de paseadores', values: { idea: 'Una app que conecta dueños de perros con paseadores de confianza cerca de casa' } },
-      { label: '🥗 Meal prep saludable', values: { idea: 'Servicio de comida saludable semanal preparada para oficinistas ocupados' } },
-      { label: '👕 Ropa con diseños propios', values: { idea: 'Tienda online de camisetas con diseños propios sobre cultura urbana' } },
+    steps: [
+      {
+        field: 'idea',
+        kind: 'textarea',
+        pregunta: '¿Cuál es tu idea?',
+        sub: 'Descríbela en una o dos frases. Sin tecnicismos.',
+        placeholder: 'Una app que conecta dueños de perros con paseadores de confianza...',
+        sugerencias: ['🐕 App de paseadores', '🥗 Meal prep saludable', '👕 Ropa con diseños propios'],
+      },
     ],
   },
   roast: {
     cta: 'Que me destrocen 💀',
-    campos: [{ name: 'idea', label: 'Suelta tu idea (sin miedo)', type: 'textarea', placeholder: 'Vender cubitos de hielo premium para gente ocupada...' }],
-    ejemplos: [
-      { label: '🧊 Hielo premium', values: { idea: 'Vender cubitos de hielo premium para gente ocupada' } },
-      { label: '🐱 Red social de gatos', values: { idea: 'Una red social solo para gatos' } },
+    steps: [
+      {
+        field: 'idea',
+        kind: 'textarea',
+        pregunta: 'Suéltala. Sin miedo. 💀',
+        sub: 'Cuanto más honesto seas, más duro (y útil) será el roast.',
+        placeholder: 'Vender cubitos de hielo premium para gente ocupada...',
+        sugerencias: ['🧊 Hielo premium', '🐱 Red social de gatos'],
+      },
     ],
   },
   simulador: {
     cta: 'Calcular lo que puedo ganar',
-    campos: [
-      { name: 'negocio', label: 'Tu negocio', type: 'textarea', placeholder: 'Agencia de gestión de redes sociales para restaurantes locales' },
-      { name: 'precio', label: '¿Cuánto vas a cobrar?', type: 'text', placeholder: '400€/mes por cliente' },
-    ],
-    ejemplos: [
-      { label: '📱 Agencia de redes', values: { negocio: 'Agencia de gestión de redes sociales para restaurantes locales', precio: '400€/mes por cliente' } },
-      { label: '🌐 Webs para negocios', values: { negocio: 'Diseño de webs para negocios locales sin presencia online', precio: '50€ la web + 50€/mes de mantenimiento' } },
+    steps: [
+      {
+        field: 'negocio',
+        kind: 'textarea',
+        pregunta: '¿Qué negocio quieres simular?',
+        sub: 'Cuéntame qué vendes y a quién.',
+        placeholder: 'Agencia de gestión de redes sociales para restaurantes locales',
+        sugerencias: ['📱 Agencia de redes', '🌐 Webs para negocios'],
+      },
+      {
+        field: 'precio',
+        kind: 'text',
+        pregunta: '¿Cuánto vas a cobrar?',
+        sub: 'Tu precio por cliente o por proyecto.',
+        placeholder: '400€/mes por cliente',
+        sugerencias: ['20€/mes', '50€ + 50€/mes', '400€/mes por cliente', '500€ el proyecto'],
+      },
     ],
   },
   reto: {
     cta: 'Generar mi reto de 30 días',
-    campos: [{ name: 'negocio', label: 'Tu negocio', type: 'textarea', placeholder: 'Tienda online de camisetas con diseños propios' }],
-    ejemplos: [
-      { label: '👕 Tienda de camisetas', values: { negocio: 'Tienda online de camisetas con diseños propios' } },
-      { label: '☕ Cafetería de especialidad', values: { negocio: 'Cafetería de especialidad para llevar en zona de oficinas' } },
+    steps: [
+      {
+        field: 'negocio',
+        kind: 'textarea',
+        pregunta: '¿Qué negocio vas a lanzar?',
+        sub: 'Te montaré un plan semana a semana para conseguir tus primeros clientes.',
+        placeholder: 'Tienda online de camisetas con diseños propios',
+        sugerencias: ['👕 Tienda de camisetas', '☕ Cafetería de especialidad'],
+      },
     ],
   },
 };
@@ -73,30 +142,61 @@ const FRASES_PENSANDO = [
 
 export function Runner({ slug }: { slug: ModuloSlug }) {
   const modulo = getModulo(slug)!;
-  const config = CONFIG[slug];
-  const [fields, setFields] = useState<Fields>({});
+  const flow = FLOWS[slug];
+  const total = flow.steps.length;
+
+  const [i, setI] = useState(0); // paso actual
+  const [answers, setAnswers] = useState<Answers>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultado, setResultado] = useState<any>(null);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const step = flow.steps[i];
+  const isLast = i === total - 1;
+  const current = answers[step.field];
+  const filled = current !== undefined && String(current).trim() !== '';
+
+  function set(field: string, value: Val) {
+    setAnswers((a) => ({ ...a, [field]: value }));
+  }
+
+  function back() {
+    if (i > 0) setI(i - 1);
+  }
+
+  async function next() {
+    if (!filled) return;
+    if (!isLast) {
+      setI(i + 1);
+      return;
+    }
+    await submit();
+  }
+
+  // Para opciones: seleccionar avanza (o envía) automáticamente.
+  function pick(field: string, value: Val) {
+    const nextAnswers = { ...answers, [field]: value };
+    setAnswers(nextAnswers);
+    setTimeout(() => {
+      if (i < total - 1) setI(i + 1);
+      else submit(nextAnswers);
+    }, 260);
+  }
+
+  async function submit(over?: Answers) {
+    const data = over ?? answers;
     setLoading(true);
     setError(null);
     setResultado(null);
     try {
-      const body: Fields = {};
-      for (const c of config.campos) {
-        body[c.name] = c.type === 'number' ? Number(fields[c.name] || 0) : (fields[c.name] ?? '');
-      }
       const res = await fetch(`/api/emprende/${slug}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(data),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
-      setResultado(data.resultado);
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || 'Error');
+      setResultado(j.resultado);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Algo salió mal');
     } finally {
@@ -104,10 +204,17 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
     }
   }
 
+  function reset() {
+    setResultado(null);
+    setError(null);
+    setAnswers({});
+    setI(0);
+  }
+
   return (
     <div className="max-w-3xl mx-auto p-5 md:p-10">
-      {/* Cabecera */}
-      <div className="emp-in">
+      {/* Cabecera del módulo */}
+      <div className="emp-in mb-5">
         <div
           className="rounded-3xl p-6 md:p-7 relative overflow-hidden border"
           style={{
@@ -130,83 +237,181 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
         </div>
       </div>
 
-      {/* Formulario */}
-      <form onSubmit={onSubmit} className="emp-card p-5 md:p-6 space-y-5 mt-5 emp-in">
-        {config.campos.map((c) => (
-          <div key={c.name}>
-            <label className="text-sm font-semibold mb-1.5 block text-white">{c.label}</label>
-            {c.type === 'textarea' ? (
-              <textarea
-                className="emp-input min-h-[92px] resize-none"
-                placeholder={c.placeholder}
-                value={(fields[c.name] as string) ?? ''}
-                onChange={(e) => setFields((f) => ({ ...f, [c.name]: e.target.value }))}
-                required
-              />
-            ) : (
-              <input
-                type={c.type}
-                className="emp-input"
-                placeholder={c.placeholder}
-                value={(fields[c.name] as string) ?? ''}
-                onChange={(e) => setFields((f) => ({ ...f, [c.name]: e.target.value }))}
-                required
-              />
-            )}
+      {/* Estado: resultado */}
+      {resultado ? (
+        <div className="emp-in">
+          <div className="flex items-center justify-between mb-4">
+            <span className="emp-badge">✅ Listo</span>
+            <button onClick={reset} className="emp-btn-ghost text-xs px-4 py-2">
+              ↻ Volver a empezar
+            </button>
           </div>
-        ))}
-
-        {/* Chips de ejemplo */}
-        {config.ejemplos.length > 0 && (
-          <div>
-            <div className="text-xs emp-dim mb-2">¿Sin inspiración? Prueba con un ejemplo:</div>
-            <div className="flex flex-wrap gap-2">
-              {config.ejemplos.map((ej) => (
-                <button
-                  key={ej.label}
-                  type="button"
-                  className="emp-pill"
-                  onClick={() => setFields(ej.values)}
-                >
-                  {ej.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <button type="submit" disabled={loading} className="emp-btn w-full text-sm">
-          {loading ? <Pensando /> : config.cta}
-        </button>
-      </form>
-
-      {error && (
-        <div className="mt-4 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'rgba(244,63,94,.35)', background: 'rgba(244,63,94,.12)', color: '#fda4af' }}>
-          {error}
-        </div>
-      )}
-
-      {loading && !resultado && <LoadingCard grad={modulo.grad} />}
-
-      {resultado && (
-        <div className="mt-6 emp-in">
           <Resultado slug={slug} data={resultado} />
+        </div>
+      ) : loading ? (
+        <LoadingCard grad={modulo.grad} />
+      ) : (
+        /* Estado: wizard */
+        <div className="emp-card p-6 md:p-8">
+          {/* Progreso (solo si hay más de un paso) */}
+          {total > 1 && (
+            <div className="mb-7">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold emp-dim">
+                  Pregunta {i + 1} de {total}
+                </span>
+                <span className="text-xs emp-dim">{Math.round((i / total) * 100)}%</span>
+              </div>
+              <div className="emp-dots">
+                {flow.steps.map((_, idx) => (
+                  <i key={idx} className={idx < i ? 'done' : idx === i ? 'current' : ''} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* El paso actual (key fuerza la animación de entrada) */}
+          <Paso
+            key={i}
+            step={step}
+            value={current}
+            onChange={(v) => set(step.field, v)}
+            onPick={(v) => pick(step.field, v)}
+            onEnter={next}
+          />
+
+          {error && (
+            <div className="mt-5 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'rgba(244,63,94,.35)', background: 'rgba(244,63,94,.12)', color: '#fda4af' }}>
+              {error}
+            </div>
+          )}
+
+          {/* Navegación (los pasos de opción avanzan solos, no necesitan botón) */}
+          {step.kind !== 'choice' && (
+            <div className="mt-6 flex items-center gap-3">
+              {i > 0 && (
+                <button onClick={back} className="emp-btn-ghost text-sm px-5">
+                  ← Atrás
+                </button>
+              )}
+              <button onClick={next} disabled={!filled} className="emp-btn flex-1 text-sm">
+                {isLast ? `${flow.cta} →` : 'Siguiente →'}
+              </button>
+            </div>
+          )}
+          {step.kind === 'choice' && i > 0 && (
+            <div className="mt-6">
+              <button onClick={back} className="emp-btn-ghost text-sm px-5">
+                ← Atrás
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function Pensando() {
+/* ---------------- Un paso del wizard ---------------- */
+
+function Paso({
+  step,
+  value,
+  onChange,
+  onPick,
+  onEnter,
+}: {
+  step: Step;
+  value: Val | undefined;
+  onChange: (v: Val) => void;
+  onPick: (v: Val) => void;
+  onEnter: () => void;
+}) {
+  const ref = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
+  useEffect(() => {
+    if (step.kind !== 'choice') ref.current?.focus();
+  }, [step]);
+
   return (
-    <span className="emp-thinking text-white">
-      Pensando
-      <span className="dot" />
-      <span className="dot" />
-      <span className="dot" />
-    </span>
+    <div className="emp-step-in">
+      <h2 className="text-2xl md:text-[28px] font-black tracking-tight text-white leading-tight">
+        {step.pregunta}
+      </h2>
+      {step.sub && <p className="emp-dim mt-2">{step.sub}</p>}
+
+      <div className="mt-5">
+        {step.kind === 'choice' ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {step.opciones.map((op, idx) => {
+              const selected = value === op.value;
+              return (
+                <button
+                  key={op.label}
+                  type="button"
+                  className={`emp-choice ${selected ? 'selected' : ''}`}
+                  onClick={() => onPick(op.value)}
+                >
+                  {op.emoji ? (
+                    <span className="emp-choice-emoji">{op.emoji}</span>
+                  ) : (
+                    <span className="emp-choice-key">{String.fromCharCode(65 + idx)}</span>
+                  )}
+                  <span className="min-w-0">
+                    <span className="block font-semibold leading-tight">{op.label}</span>
+                    {op.hint && <span className="block text-xs emp-dim mt-0.5">{op.hint}</span>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : step.kind === 'textarea' ? (
+          <textarea
+            ref={ref}
+            className="emp-input min-h-[120px] resize-none text-base"
+            placeholder={step.placeholder}
+            value={(value as string) ?? ''}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') onEnter();
+            }}
+          />
+        ) : (
+          <input
+            ref={ref}
+            type="text"
+            className="emp-input text-base"
+            placeholder={step.placeholder}
+            value={(value as string) ?? ''}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onEnter();
+            }}
+          />
+        )}
+      </div>
+
+      {/* Sugerencias */}
+      {step.kind !== 'choice' && step.sugerencias && step.sugerencias.length > 0 && (
+        <div className="mt-4">
+          <div className="text-xs emp-dim mb-2">💡 Toca para usar un ejemplo:</div>
+          <div className="flex flex-wrap gap-2">
+            {step.sugerencias.map((s) => (
+              <button key={s} type="button" className="emp-sugg" onClick={() => onChange(s.replace(/^[^\s]+\s/, ''))}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step.kind === 'textarea' && (
+        <p className="text-[11px] emp-dim mt-3">Pulsa ⌘/Ctrl + Enter para continuar</p>
+      )}
+    </div>
   );
 }
+
+/* ---------------- Loading ---------------- */
 
 function LoadingCard({ grad }: { grad: readonly [string, string] }) {
   const [i, setI] = useState(0);
@@ -215,12 +420,9 @@ function LoadingCard({ grad }: { grad: readonly [string, string] }) {
     return () => clearInterval(t);
   }, []);
   return (
-    <div className="mt-6 emp-card p-6 emp-in">
+    <div className="emp-card p-6 emp-in">
       <div className="flex items-center gap-3">
-        <span
-          className="grid h-10 w-10 place-items-center rounded-xl text-lg shrink-0"
-          style={{ background: gradCss(grad) }}
-        >
+        <span className="grid h-10 w-10 place-items-center rounded-xl text-lg shrink-0" style={{ background: gradCss(grad) }}>
           🤖
         </span>
         <div className="flex-1 min-w-0">
@@ -249,10 +451,7 @@ function notaColor(n: number) {
 
 function Ring({ n }: { n: number }) {
   return (
-    <div
-      className="emp-ring shrink-0"
-      style={{ ['--ring-val' as string]: n * 10, ['--ring-color' as string]: notaColor(n) }}
-    >
+    <div className="emp-ring shrink-0" style={{ ['--ring-val' as string]: n * 10, ['--ring-color' as string]: notaColor(n) }}>
       <span className="text-center">
         <span className="block text-3xl font-black" style={{ color: notaColor(n) }}>
           {n}
@@ -398,10 +597,7 @@ function Resultado({ slug, data }: { slug: ModuloSlug; data: any }) {
           <h4 className="font-semibold text-sm mb-1 text-white">🛟 Pero podría funcionar si...</h4>
           <p className="text-sm emp-dim">{data.peroPodriaFuncionarSi}</p>
         </div>
-        <div
-          className="rounded-2xl p-4 text-center font-semibold text-white"
-          style={{ background: gradCss(['#d946ef', '#f43f5e']), boxShadow: '0 16px 34px -14px rgba(217,70,239,.6)' }}
-        >
+        <div className="rounded-2xl p-4 text-center font-semibold text-white" style={{ background: gradCss(['#d946ef', '#f43f5e']), boxShadow: '0 16px 34px -14px rgba(217,70,239,.6)' }}>
           “{data.fraseCompartible}”
         </div>
       </div>
@@ -416,8 +612,7 @@ function Resultado({ slug, data }: { slug: ModuloSlug; data: any }) {
           <h3 className="text-lg font-black text-white">💰 Proyección de ingresos</h3>
           <ShareBtn
             texto={`Mi negocio podría dar ${
-              data.escenarios.find((e: any) => /real/i.test(e.nombre))?.beneficioMes ??
-              data.escenarios[0]?.beneficioMes
+              data.escenarios.find((e: any) => /real/i.test(e.nombre))?.beneficioMes ?? data.escenarios[0]?.beneficioMes
             }€/mes de beneficio`}
           />
         </div>
@@ -457,10 +652,7 @@ function Resultado({ slug, data }: { slug: ModuloSlug; data: any }) {
         {data.semanas.map((s: any) => (
           <div key={s.semana} className="emp-inner p-4">
             <h4 className="font-semibold text-sm mb-2.5 flex items-center gap-2 text-white">
-              <span
-                className="inline-block rounded-lg px-2 py-0.5 text-xs text-white"
-                style={{ background: gradCss(['#8b5cf6', '#d946ef']) }}
-              >
+              <span className="inline-block rounded-lg px-2 py-0.5 text-xs text-white" style={{ background: gradCss(['#8b5cf6', '#d946ef']) }}>
                 Semana {s.semana}
               </span>
               {s.foco}
