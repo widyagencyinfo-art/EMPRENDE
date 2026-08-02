@@ -1,9 +1,11 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MODULOS, gradCss } from '@/lib/emprende/catalog';
 import { Ic, type IconName } from './icons';
+import { getCuentaActiva, cerrarSesion, type Cuenta } from './cuentas';
 
 export function Logo({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const s = size === 'sm' ? 'h-7 w-7 rounded-lg' : 'h-9 w-9 rounded-xl';
@@ -76,18 +78,7 @@ export function EmprendeSidebar() {
       </nav>
 
       <div className="p-4 space-y-3">
-        <div className="emp-inner p-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-white">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-            </span>
-            Plan Free activo
-          </div>
-          <p className="text-[11px] emp-dim mt-1 leading-snug">
-            Sube a Pro para uso sin límites, simulador y reto.
-          </p>
-        </div>
+        <CuentaBox />
         <Link href="/emprende/pro" className="emp-btn w-full text-sm">
           <Ic name="sparkle" size={15} /> Hazte Pro
         </Link>
@@ -137,6 +128,42 @@ export function EmprendeMobileNav() {
             </Link>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+
+function CuentaBox() {
+  const router = useRouter();
+  const [cuenta, setCuenta] = useState<Cuenta | null>(null);
+  useEffect(() => setCuenta(getCuentaActiva()), []);
+  if (!cuenta) return null;
+  return (
+    <div className="emp-inner p-3">
+      <div className="flex items-center gap-2.5">
+        <span
+          className="grid h-9 w-9 place-items-center rounded-xl text-white font-black text-xs shrink-0"
+          style={{ background: gradCss(['#5b8cff', '#22d3ee']) }}
+        >
+          {cuenta.perfil.nombre.slice(0, 2).toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-white truncate">{cuenta.perfil.nombre}</span>
+          <span className="block text-[11px] emp-dim truncate">
+            {cuenta.email === 'cuenta-local' ? 'Plan Free · este dispositivo' : `Plan Free · ${cuenta.email}`}
+          </span>
+        </span>
+        <button
+          title="Cambiar de cuenta"
+          onClick={() => {
+            cerrarSesion();
+            router.push('/entrar');
+          }}
+          className="emp-dim hover:text-white transition-colors shrink-0 p-1"
+        >
+          <Ic name="x" size={15} />
+        </button>
       </div>
     </div>
   );

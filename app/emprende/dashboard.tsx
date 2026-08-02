@@ -92,6 +92,9 @@ function Panel({ perfil, runs, onChange }: { perfil: Perfil; runs: RunLog[]; onC
         <NotasCard s={s} />
         <HistorialCard runs={runs} />
       </div>
+
+      {/* Tu perfil (lo que contaste al registrarte) */}
+      <PerfilCard perfil={perfil} />
     </section>
   );
 }
@@ -340,6 +343,46 @@ function HistorialCard({ runs }: { runs: RunLog[] }) {
             Hacer el primero →
           </Link>
         </div>
+      )}
+    </div>
+  );
+}
+
+function PerfilCard({ perfil }: { perfil: Perfil }) {
+  const [abierto, setAbierto] = useState(false);
+  const filas: { icon: IconName; k: string; v: string }[] = [
+    { icon: 'briefcase', k: 'Área', v: perfil.area },
+    { icon: 'flag', k: 'Punto de partida', v: perfil.experiencia },
+    { icon: 'wallet', k: 'Capital para invertir', v: `${perfil.dineroDisponible.toLocaleString('es-ES')} €` },
+    { icon: 'trending', k: 'Objetivo', v: `${perfil.objetivoMensual.toLocaleString('es-ES')} €/mes` },
+    { icon: 'clock', k: 'Tiempo disponible', v: `${perfil.horasSemana} h/semana` },
+    { icon: 'zap', k: 'Lo que más te frena', v: perfil.bloqueo },
+  ];
+  return (
+    <div className="emp-card p-5 mt-4">
+      <button onClick={() => setAbierto(!abierto)} className="w-full flex items-center justify-between gap-3 text-left">
+        <h3 className="font-bold text-white text-sm flex items-center gap-2">
+          <Ic name="user" size={15} className="emp-dim" /> Tu perfil
+          <span className="emp-dim font-normal">— lo que me contaste al crear tu cuenta</span>
+        </h3>
+        <Ic name="arrowRight" size={14} className={`emp-dim shrink-0 transition-transform ${abierto ? 'rotate-90' : ''}`} />
+      </button>
+      {abierto && (
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 mt-4 emp-step-in">
+          {filas.map((f) => (
+            <div key={f.k} className="emp-inner p-3">
+              <div className="text-[11px] emp-dim flex items-center gap-1.5">
+                <Ic name={f.icon} size={11} /> {f.k}
+              </div>
+              <div className="text-sm font-semibold text-white mt-1 leading-snug">{f.v}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {abierto && (
+        <p className="text-[11px] emp-dim mt-3">
+          Tu plan y tu ruta se generaron con estos datos. Para cambiarlos, crea una cuenta nueva desde la pantalla de entrada.
+        </p>
       )}
     </div>
   );

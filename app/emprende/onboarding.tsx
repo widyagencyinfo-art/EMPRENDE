@@ -17,6 +17,8 @@ type Step = {
   kind: 'text' | 'choice';
   placeholder?: string;
   opciones?: Card[];
+  /** añade la tarjeta "Otro" con texto libre */
+  otro?: boolean;
 };
 
 const STEPS: Step[] = [
@@ -30,6 +32,7 @@ const STEPS: Step[] = [
   {
     field: 'area',
     kind: 'choice',
+    otro: true,
     pregunta: '¿En qué mundillo te estás moviendo?',
     sub: 'O el que te llama, si aún estás explorando.',
     opciones: [
@@ -92,6 +95,7 @@ const STEPS: Step[] = [
   {
     field: 'bloqueo',
     kind: 'choice',
+    otro: true,
     pregunta: 'Y ahora en confianza: ¿qué es lo que más te frena?',
     sub: 'Tu plan atacará esto primero.',
     opciones: [
@@ -111,12 +115,14 @@ const FRASES_PLAN = [
   'Afinando el plan...',
 ];
 
-export function Onboarding({ onDone, sinIntro = false }: { onDone: () => void; sinIntro?: boolean }) {
+export function Onboarding({ onDone, sinIntro = false, guardar }: { onDone: () => void; sinIntro?: boolean; guardar?: (p: Perfil) => void }) {
   const [fase, setFase] = useState<'intro' | 'quiz' | 'plan'>(sinIntro ? 'quiz' : 'intro');
   const [i, setI] = useState(0);
   const [datos, setDatos] = useState<Record<string, string | number>>({});
   const [error, setError] = useState<string | null>(null);
   const [fraseIdx, setFraseIdx] = useState(0);
+  const [otroActivo, setOtroActivo] = useState(false);
+  const [otroTexto, setOtroTexto] = useState('');
   const ref = useRef<HTMLInputElement>(null);
 
   const step = STEPS[i];
@@ -135,6 +141,8 @@ export function Onboarding({ onDone, sinIntro = false }: { onDone: () => void; s
   function pick(value: string | number) {
     const nuevos = { ...datos, [step.field]: value };
     setDatos(nuevos);
+    setOtroActivo(false);
+    setOtroTexto('');
     setTimeout(() => {
       if (i < STEPS.length - 1) setI(i + 1);
       else terminar(nuevos);
@@ -167,7 +175,7 @@ export function Onboarding({ onDone, sinIntro = false }: { onDone: () => void; s
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || 'Error');
-      savePerfil({
+      (guardar ?? savePerfil)({
         ...base,
         ingresosActuales: 0,
         accionesHechas: [],
@@ -177,7 +185,7 @@ export function Onboarding({ onDone, sinIntro = false }: { onDone: () => void; s
       onDone();
     } catch (err) {
       // guardamos el perfil igualmente; el plan se podrá regenerar desde el panel
-      savePerfil({ ...base, ingresosActuales: 0, accionesHechas: [], brief: null, creado: Date.now() });
+      (guardar ?? savePerfil)({ ...base, ingresosActuales: 0, accionesHechas: [], brief: null, creado: Date.now() });
       setError(err instanceof Error ? err.message : 'No pude generar tu plan, pero tu perfil está guardado.');
       setTimeout(onDone, 1800);
     }
@@ -267,24 +275,64 @@ export function Onboarding({ onDone, sinIntro = false }: { onDone: () => void; s
 
           <div className="mt-6">
             {step.kind === 'choice' ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {step.opciones!.map((op) => (
-                  <button
-                    key={op.label}
-                    type="button"
-                    className={`emp-choice big ${datos[step.field] === op.value ? 'selected' : ''}`}
-                    onClick={() => pick(op.value)}
-                  >
-                    <span className="emp-choice-key" style={{ width: 38, height: 38, borderRadius: 12 }}>
-                      <Ic name={op.icon} size={19} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-semibold leading-tight">{op.label}</span>
-                      {op.hint && <span className="block text-xs emp-dim mt-0.5">{op.hint}</span>}
-                    </span>
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {step.opciones!.map((op) => (
+                    <button
+                      key={op.label}
+                      type="button"
+                      className={`emp-choice big ${datos[step.field] === op.value ? 'selected' : ''}`}
+                      onClick={() => pick(op.value)}
+                    >
+                      <span className="emp-choice-key" style={{ width: 38, height: 38, borderRadius: 12 }}>
+                        <Ic name={op.icon} size={19} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-semibold leading-tight">{op.label}</span>
+                        {op.hint && <span className="block text-xs emp-dim mt-0.5">{op.hint}</span>}
+                      </span>
+                    </button>
+                  ))}
+                  {step.otro && (
+                    <button
+                      type="button"
+                      className={`emp-choice big dashed ${otroActivo ? 'selected' : ''}`}
+                      onClick={() => setOtroActivo(true)}
+                    >
+                      <span className="emp-choice-key" style={{ width: 38, height: 38, borderRadius: 12 }}>
+                        <Ic name="pen" size={19} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-semibold leading-tight">Otro</span>
+                        <span className="block text-xs emp-dim mt-0.5">lo escribo con mis palabras</span>
+                      </span>
+                    </button>
+                  )}
+                </div>
+                {step.otro && otroActivo && (
+                  <div className="mt-4 flex gap-2 emp-step-in">
+                    <input
+                      autoFocus
+                      type="text"
+                      className="emp-input text-base flex-1"
+                      placeholder="Cuéntamelo en una frase..."
+                      value={otroTexto}
+                      onChange={(e) => setOtroTexto(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && otroTexto.trim()) pick(otroTexto.trim());
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={!otroTexto.trim()}
+                      onClick={() => pick(otroTexto.trim())}
+                      className="emp-btn text-sm px-5"
+                    >
+                      <Ic name="arrowRight" size={16} />
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <input
                 ref={ref}

@@ -200,6 +200,29 @@ export default function LandingPage() {
         </div>
         <p className="text-[11px] emp-dim mt-4">Gratis · Sin tarjeta · Tu plan en 1 minuto</p>
 
+        {/* Captura real del producto, con marco de navegador */}
+        <div className="mt-14 relative emp-in max-w-5xl mx-auto">
+          <div
+            className="absolute -inset-x-16 -top-16 bottom-0 -z-10 pointer-events-none"
+            style={{ background: 'radial-gradient(60% 65% at 50% 35%, rgba(91,140,255,.30), transparent 70%), radial-gradient(40% 50% at 80% 60%, rgba(34,211,238,.18), transparent 70%)', filter: 'blur(28px)' }}
+          />
+          <div
+            className="rounded-2xl overflow-hidden border border-white/15"
+            style={{ boxShadow: '0 50px 110px -30px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.05), inset 0 1px 0 rgba(255,255,255,.1)' }}
+          >
+            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/10" style={{ background: 'rgba(255,255,255,.05)' }}>
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#ff5f57' }} />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#febc2e' }} />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#28c840' }} />
+              <span className="mx-auto text-[11px] emp-dim rounded-md px-3 py-0.5" style={{ background: 'rgba(255,255,255,.06)' }}>
+                emprendia.app/panel
+              </span>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/img/panel.png" alt="El panel de emprendIA: tu objetivo de capital, tu foco de la semana y tus análisis" className="w-full h-auto block" />
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto emp-stagger">
           {STATS.map((s) => (
