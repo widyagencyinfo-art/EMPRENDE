@@ -1,9 +1,12 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { getModulo, gradCss, type ModuloSlug } from '@/lib/emprende/catalog';
+import { logRun } from '../stats';
 
 type Val = string | number;
 type Answers = Record<string, Val>;
+
+type Card = { emoji: string; label: string; hint?: string; value: Val };
 
 type Step =
   | {
@@ -12,17 +15,17 @@ type Step =
       pregunta: string;
       sub?: string;
       placeholder: string;
-      sugerencias?: string[];
+      cards?: Card[]; // respuestas rápidas en tarjeta; siempre se puede escribir a mano
     }
   | {
       field: string;
       kind: 'choice';
       pregunta: string;
       sub?: string;
-      opciones: { emoji?: string; label: string; hint?: string; value: Val }[];
+      opciones: Card[];
     };
 
-// Cada módulo se convierte en una conversación de N preguntas.
+// Cada módulo es una conversación de N preguntas, respondibles por tarjetas.
 const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
   'que-negocio': {
     cta: 'Descubrir mi negocio',
@@ -31,9 +34,15 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         field: 'skills',
         kind: 'textarea',
         pregunta: '¿Qué se te da bien?',
-        sub: 'Tus habilidades, lo que la gente te pide o lo que disfrutas haciendo.',
+        sub: 'Elige lo tuyo o escríbelo con tus palabras.',
         placeholder: 'Diseño, hablar con gente, programar, redes sociales...',
-        sugerencias: ['Diseño y redes', 'Programar', 'Hablar y vender', 'Manualidades', 'Cocinar'],
+        cards: [
+          { emoji: '🎨', label: 'Diseño y contenido', hint: 'gráfico, vídeo, redes', value: 'Diseño gráfico, edición de vídeo y redes sociales' },
+          { emoji: '💻', label: 'Programar', hint: 'webs, apps, automatizar', value: 'Programar webs, apps y automatizaciones' },
+          { emoji: '🗣️', label: 'Vender y hablar', hint: 'con gente, negociar', value: 'Hablar con gente, vender y negociar' },
+          { emoji: '✂️', label: 'Hacer con las manos', hint: 'manualidades, producto', value: 'Manualidades y productos hechos a mano' },
+          { emoji: '🍳', label: 'Cocinar', hint: 'comida, repostería', value: 'Cocinar y repostería' },
+        ],
       },
       {
         field: 'horasSemana',
@@ -63,9 +72,16 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         field: 'intereses',
         kind: 'textarea',
         pregunta: '¿Qué temas te tiran?',
-        sub: 'El sector donde te apetece trabajar. Vale más de uno.',
+        sub: 'El sector donde te apetece trabajar.',
         placeholder: 'Moda, fitness, tecnología, ayudar a negocios locales...',
-        sugerencias: ['Moda', 'Fitness y salud', 'Tecnología', 'Negocios locales', 'Comida', 'Gaming'],
+        cards: [
+          { emoji: '👗', label: 'Moda', value: 'Moda y marcas de ropa' },
+          { emoji: '💪', label: 'Fitness y salud', value: 'Fitness, salud y bienestar' },
+          { emoji: '📱', label: 'Tecnología', value: 'Tecnología y apps' },
+          { emoji: '🏪', label: 'Negocios locales', value: 'Ayudar a negocios locales a crecer' },
+          { emoji: '🍔', label: 'Comida', value: 'Comida y hostelería' },
+          { emoji: '🎮', label: 'Gaming y contenido', value: 'Gaming y creación de contenido' },
+        ],
       },
     ],
   },
@@ -76,9 +92,13 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         field: 'idea',
         kind: 'textarea',
         pregunta: '¿Cuál es tu idea?',
-        sub: 'Descríbela en una o dos frases. Sin tecnicismos.',
+        sub: 'Elige un ejemplo para probar o cuéntame la tuya.',
         placeholder: 'Una app que conecta dueños de perros con paseadores de confianza...',
-        sugerencias: ['🐕 App de paseadores', '🥗 Meal prep saludable', '👕 Ropa con diseños propios'],
+        cards: [
+          { emoji: '🐕', label: 'App de paseadores', hint: 'para dueños de perros', value: 'Una app que conecta dueños de perros con paseadores de confianza cerca de casa' },
+          { emoji: '🥗', label: 'Meal prep saludable', hint: 'para oficinistas', value: 'Servicio de comida saludable semanal preparada para oficinistas ocupados' },
+          { emoji: '👕', label: 'Ropa con diseños propios', hint: 'cultura urbana', value: 'Tienda online de camisetas con diseños propios sobre cultura urbana' },
+        ],
       },
     ],
   },
@@ -91,7 +111,10 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: 'Suéltala. Sin miedo. 💀',
         sub: 'Cuanto más honesto seas, más duro (y útil) será el roast.',
         placeholder: 'Vender cubitos de hielo premium para gente ocupada...',
-        sugerencias: ['🧊 Hielo premium', '🐱 Red social de gatos'],
+        cards: [
+          { emoji: '🧊', label: 'Hielo premium', hint: 'para gente ocupada', value: 'Vender cubitos de hielo premium para gente ocupada' },
+          { emoji: '🐱', label: 'Red social de gatos', hint: 'solo para gatos', value: 'Una red social solo para gatos' },
+        ],
       },
     ],
   },
@@ -104,7 +127,10 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Qué negocio quieres simular?',
         sub: 'Cuéntame qué vendes y a quién.',
         placeholder: 'Agencia de gestión de redes sociales para restaurantes locales',
-        sugerencias: ['📱 Agencia de redes', '🌐 Webs para negocios'],
+        cards: [
+          { emoji: '📱', label: 'Agencia de redes', hint: 'para restaurantes', value: 'Agencia de gestión de redes sociales para restaurantes locales' },
+          { emoji: '🌐', label: 'Webs para negocios', hint: 'locales sin web', value: 'Diseño de webs para negocios locales sin presencia online' },
+        ],
       },
       {
         field: 'precio',
@@ -112,7 +138,12 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Cuánto vas a cobrar?',
         sub: 'Tu precio por cliente o por proyecto.',
         placeholder: '400€/mes por cliente',
-        sugerencias: ['20€/mes', '50€ + 50€/mes', '400€/mes por cliente', '500€ el proyecto'],
+        cards: [
+          { emoji: '💶', label: '20€/mes', hint: 'suscripción baja', value: '20€/mes' },
+          { emoji: '🔁', label: '50€ + 50€/mes', hint: 'entrada + cuota', value: '50€ la web + 50€/mes de mantenimiento' },
+          { emoji: '💰', label: '400€/mes', hint: 'por cliente', value: '400€/mes por cliente' },
+          { emoji: '🧾', label: '500€ el proyecto', hint: 'pago único', value: '500€ por proyecto' },
+        ],
       },
     ],
   },
@@ -123,9 +154,12 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         field: 'negocio',
         kind: 'textarea',
         pregunta: '¿Qué negocio vas a lanzar?',
-        sub: 'Te montaré un plan semana a semana para conseguir tus primeros clientes.',
+        sub: 'Te montaré un plan semana a semana.',
         placeholder: 'Tienda online de camisetas con diseños propios',
-        sugerencias: ['👕 Tienda de camisetas', '☕ Cafetería de especialidad'],
+        cards: [
+          { emoji: '👕', label: 'Tienda de camisetas', hint: 'diseños propios', value: 'Tienda online de camisetas con diseños propios' },
+          { emoji: '☕', label: 'Cafetería especialidad', hint: 'para llevar', value: 'Cafetería de especialidad para llevar en zona de oficinas' },
+        ],
       },
     ],
   },
@@ -145,7 +179,8 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
   const flow = FLOWS[slug];
   const total = flow.steps.length;
 
-  const [i, setI] = useState(0); // paso actual
+  const [started, setStarted] = useState(false);
+  const [i, setI] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -162,6 +197,7 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
 
   function back() {
     if (i > 0) setI(i - 1);
+    else setStarted(false);
   }
 
   async function next() {
@@ -173,7 +209,7 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
     await submit();
   }
 
-  // Para opciones: seleccionar avanza (o envía) automáticamente.
+  // Elegir una tarjeta responde y avanza (o envía) automáticamente.
   function pick(field: string, value: Val) {
     const nextAnswers = { ...answers, [field]: value };
     setAnswers(nextAnswers);
@@ -197,6 +233,8 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
       const j = await res.json();
       if (!res.ok) throw new Error(j.error || 'Error');
       setResultado(j.resultado);
+      // registrar en el centro de mando (XP, racha, notas)
+      logRun(slug, typeof j.resultado?.nota === 'number' ? j.resultado.nota : undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Algo salió mal');
     } finally {
@@ -209,6 +247,7 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
     setError(null);
     setAnswers({});
     setI(0);
+    setStarted(false);
   }
 
   return (
@@ -237,11 +276,10 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
         </div>
       </div>
 
-      {/* Estado: resultado */}
       {resultado ? (
         <div className="emp-in">
           <div className="flex items-center justify-between mb-4">
-            <span className="emp-badge">✅ Listo</span>
+            <span className="emp-badge">✅ Listo · +25 XP</span>
             <button onClick={reset} className="emp-btn-ghost text-xs px-4 py-2">
               ↻ Volver a empezar
             </button>
@@ -250,10 +288,33 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
         </div>
       ) : loading ? (
         <LoadingCard grad={modulo.grad} />
+      ) : !started ? (
+        /* ---------- Pantalla de bienvenida ---------- */
+        <div className="emp-card p-8 md:p-10 text-center emp-in relative overflow-hidden">
+          <div
+            className="absolute inset-0 -z-10 opacity-50"
+            style={{ background: `radial-gradient(70% 100% at 50% 0%, ${modulo.grad[0]}26, transparent 70%)` }}
+          />
+          <div className="text-5xl mb-4">{modulo.emoji}</div>
+          <h2 className="text-2xl md:text-3xl font-black text-white leading-tight max-w-md mx-auto">
+            {total === 1 ? 'Una sola pregunta' : `${total} preguntas rápidas`} y la IA hace el resto
+          </h2>
+          <p className="emp-dim mt-3 max-w-sm mx-auto">
+            Responde tocando tarjetas (o escribe si lo prefieres) y te doy un
+            resultado accionable al momento.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 mt-5">
+            <span className="emp-badge">⚡ ~30 segundos</span>
+            <span className="emp-badge">🤖 IA real</span>
+            <span className="emp-badge">🎁 Gratis · sin registro</span>
+          </div>
+          <button onClick={() => setStarted(true)} className="emp-btn text-sm mt-7 px-10">
+            Empezar →
+          </button>
+        </div>
       ) : (
-        /* Estado: wizard */
+        /* ---------- Wizard ---------- */
         <div className="emp-card p-6 md:p-8">
-          {/* Progreso (solo si hay más de un paso) */}
           {total > 1 && (
             <div className="mb-7">
               <div className="flex items-center justify-between mb-2">
@@ -270,40 +331,23 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
             </div>
           )}
 
-          {/* El paso actual (key fuerza la animación de entrada) */}
           <Paso
             key={i}
             step={step}
             value={current}
+            isLast={isLast}
+            cta={flow.cta}
+            filled={filled}
             onChange={(v) => set(step.field, v)}
             onPick={(v) => pick(step.field, v)}
-            onEnter={next}
+            onNext={next}
+            onBack={back}
+            showBack={i > 0 || true}
           />
 
           {error && (
             <div className="mt-5 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'rgba(244,63,94,.35)', background: 'rgba(244,63,94,.12)', color: '#fda4af' }}>
               {error}
-            </div>
-          )}
-
-          {/* Navegación (los pasos de opción avanzan solos, no necesitan botón) */}
-          {step.kind !== 'choice' && (
-            <div className="mt-6 flex items-center gap-3">
-              {i > 0 && (
-                <button onClick={back} className="emp-btn-ghost text-sm px-5">
-                  ← Atrás
-                </button>
-              )}
-              <button onClick={next} disabled={!filled} className="emp-btn flex-1 text-sm">
-                {isLast ? `${flow.cta} →` : 'Siguiente →'}
-              </button>
-            </div>
-          )}
-          {step.kind === 'choice' && i > 0 && (
-            <div className="mt-6">
-              <button onClick={back} className="emp-btn-ghost text-sm px-5">
-                ← Atrás
-              </button>
             </div>
           )}
         </div>
@@ -317,94 +361,139 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
 function Paso({
   step,
   value,
+  isLast,
+  cta,
+  filled,
   onChange,
   onPick,
-  onEnter,
+  onNext,
+  onBack,
+  showBack,
 }: {
   step: Step;
   value: Val | undefined;
+  isLast: boolean;
+  cta: string;
+  filled: boolean;
   onChange: (v: Val) => void;
   onPick: (v: Val) => void;
-  onEnter: () => void;
+  onNext: () => void;
+  onBack: () => void;
+  showBack: boolean;
 }) {
+  const tieneCards = step.kind !== 'choice' && !!step.cards?.length;
+  const [manual, setManual] = useState(step.kind !== 'choice' && !step.cards?.length);
   const ref = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
+
   useEffect(() => {
-    if (step.kind !== 'choice') ref.current?.focus();
-  }, [step]);
+    if (manual) ref.current?.focus();
+  }, [manual]);
 
   return (
     <div className="emp-step-in">
-      <h2 className="text-2xl md:text-[28px] font-black tracking-tight text-white leading-tight">
+      <h2 className="text-2xl md:text-[30px] font-black tracking-tight text-white leading-tight">
         {step.pregunta}
       </h2>
       {step.sub && <p className="emp-dim mt-2">{step.sub}</p>}
 
-      <div className="mt-5">
+      <div className="mt-6">
         {step.kind === 'choice' ? (
+          /* --- Opciones fijas --- */
           <div className="grid gap-3 sm:grid-cols-2">
-            {step.opciones.map((op, idx) => {
-              const selected = value === op.value;
-              return (
-                <button
-                  key={op.label}
-                  type="button"
-                  className={`emp-choice ${selected ? 'selected' : ''}`}
-                  onClick={() => onPick(op.value)}
-                >
-                  {op.emoji ? (
-                    <span className="emp-choice-emoji">{op.emoji}</span>
-                  ) : (
-                    <span className="emp-choice-key">{String.fromCharCode(65 + idx)}</span>
-                  )}
-                  <span className="min-w-0">
-                    <span className="block font-semibold leading-tight">{op.label}</span>
-                    {op.hint && <span className="block text-xs emp-dim mt-0.5">{op.hint}</span>}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ) : step.kind === 'textarea' ? (
-          <textarea
-            ref={ref}
-            className="emp-input min-h-[120px] resize-none text-base"
-            placeholder={step.placeholder}
-            value={(value as string) ?? ''}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') onEnter();
-            }}
-          />
-        ) : (
-          <input
-            ref={ref}
-            type="text"
-            className="emp-input text-base"
-            placeholder={step.placeholder}
-            value={(value as string) ?? ''}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') onEnter();
-            }}
-          />
-        )}
-      </div>
-
-      {/* Sugerencias */}
-      {step.kind !== 'choice' && step.sugerencias && step.sugerencias.length > 0 && (
-        <div className="mt-4">
-          <div className="text-xs emp-dim mb-2">💡 Toca para usar un ejemplo:</div>
-          <div className="flex flex-wrap gap-2">
-            {step.sugerencias.map((s) => (
-              <button key={s} type="button" className="emp-sugg" onClick={() => onChange(s.replace(/^[^\s]+\s/, ''))}>
-                {s}
+            {step.opciones.map((op) => (
+              <button
+                key={op.label}
+                type="button"
+                className={`emp-choice big ${value === op.value ? 'selected' : ''}`}
+                onClick={() => onPick(op.value)}
+              >
+                <span className="emp-choice-emoji">{op.emoji}</span>
+                <span className="min-w-0">
+                  <span className="block font-semibold leading-tight">{op.label}</span>
+                  {op.hint && <span className="block text-xs emp-dim mt-0.5">{op.hint}</span>}
+                </span>
               </button>
             ))}
           </div>
-        </div>
-      )}
+        ) : !manual && tieneCards ? (
+          /* --- Respuestas rápidas en tarjeta + "lo escribo yo" --- */
+          <div className="grid gap-3 sm:grid-cols-2">
+            {step.cards!.map((c) => (
+              <button
+                key={c.label}
+                type="button"
+                className={`emp-choice big ${value === c.value ? 'selected' : ''}`}
+                onClick={() => onPick(c.value)}
+              >
+                <span className="emp-choice-emoji">{c.emoji}</span>
+                <span className="min-w-0">
+                  <span className="block font-semibold leading-tight">{c.label}</span>
+                  {c.hint && <span className="block text-xs emp-dim mt-0.5">{c.hint}</span>}
+                </span>
+              </button>
+            ))}
+            <button type="button" className="emp-choice big dashed" onClick={() => setManual(true)}>
+              <span className="emp-choice-emoji">✍️</span>
+              <span className="min-w-0">
+                <span className="block font-semibold leading-tight">Lo escribo yo</span>
+                <span className="block text-xs emp-dim mt-0.5">con mis palabras</span>
+              </span>
+            </button>
+          </div>
+        ) : (
+          /* --- Escritura libre --- */
+          <>
+            {step.kind === 'textarea' ? (
+              <textarea
+                ref={ref}
+                className="emp-input min-h-[120px] resize-none text-base"
+                placeholder={step.placeholder}
+                value={(value as string) ?? ''}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') onNext();
+                }}
+              />
+            ) : (
+              <input
+                ref={ref}
+                type="text"
+                className="emp-input text-base"
+                placeholder={step.placeholder}
+                value={(value as string) ?? ''}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') onNext();
+                }}
+              />
+            )}
+            {tieneCards && (
+              <button
+                type="button"
+                className="text-xs emp-dim mt-2.5 hover:text-white transition-colors"
+                onClick={() => setManual(false)}
+              >
+                ← mejor elijo una tarjeta
+              </button>
+            )}
+          </>
+        )}
+      </div>
 
-      {step.kind === 'textarea' && (
+      {/* Navegación */}
+      <div className="mt-7 flex items-center gap-3">
+        {showBack && (
+          <button onClick={onBack} className="emp-btn-ghost text-sm px-5">
+            ← Atrás
+          </button>
+        )}
+        {(manual || !tieneCards) && step.kind !== 'choice' && (
+          <button onClick={onNext} disabled={!filled} className="emp-btn flex-1 text-sm">
+            {isLast ? `${cta} →` : 'Siguiente →'}
+          </button>
+        )}
+      </div>
+      {step.kind === 'textarea' && manual && (
         <p className="text-[11px] emp-dim mt-3">Pulsa ⌘/Ctrl + Enter para continuar</p>
       )}
     </div>

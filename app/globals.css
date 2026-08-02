@@ -498,6 +498,61 @@
 .emp-dots > i.done { background: linear-gradient(90deg, var(--emp-1), var(--emp-2)); }
 .emp-dots > i.current { background: linear-gradient(90deg, var(--emp-2), var(--emp-3)); box-shadow: 0 0 12px -2px var(--emp-2); }
 
+/* Tarjeta de respuesta grande (modo "app pro") */
+.emp-choice.big {
+  padding: 1.3rem 1.35rem;
+  border-radius: 20px;
+}
+.emp-choice.big .emp-choice-emoji { font-size: 1.7rem; }
+
+/* Tarjeta "escribir yo" (punteada) */
+.emp-choice.dashed {
+  border-style: dashed;
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.015);
+}
+.emp-choice.dashed:hover { border-style: solid; }
+
+/* ============================================================
+   KPIs del centro de mando
+   ============================================================ */
+.emp-kpi {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 1.15rem 1.25rem;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.09);
+  backdrop-filter: blur(12px);
+  transition: transform .2s, border-color .2s;
+}
+.emp-kpi:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.18); }
+.emp-kpi::before {
+  content: '';
+  position: absolute; inset: 0 0 auto 0; height: 3px;
+  background: var(--kpi-c, linear-gradient(90deg, var(--emp-1), var(--emp-2)));
+  opacity: .9;
+}
+.emp-kpi-num {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  color: #fff;
+}
+
+/* Barras del mini-chart de notas */
+.emp-chart { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+.emp-chart > div {
+  flex: 1; border-radius: 8px 8px 4px 4px;
+  min-height: 8px;
+  background: linear-gradient(180deg, var(--bar-c, var(--emp-2)), transparent 160%);
+  box-shadow: 0 0 18px -6px var(--bar-c, var(--emp-2));
+  animation: emp-grow .7s cubic-bezier(.22,1,.36,1) both;
+  transform-origin: bottom;
+}
+@keyframes emp-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
 @media (prefers-reduced-motion: reduce) {
   .emp-app::before, .emp-grad-text, .emp-hero::before, .emp-hero::after,
   .emp-in, .emp-stagger > *, .emp-progress > i { animation: none !important; }
