@@ -63,7 +63,7 @@ concretos para arrancar, y 2 alternativas por si la primera no le convence.`,
 /* 2. VALIDADOR DE IDEA  — el corazón                                 */
 /* ------------------------------------------------------------------ */
 
-export const ValidarInput = z.object({ idea: z.string() });
+export const ValidarInput = z.object({ idea: z.string(), contexto: z.string().optional() });
 export type ValidarInput = z.infer<typeof ValidarInput>;
 
 const ValidarOutput = z.object({
@@ -85,7 +85,7 @@ export function validar(input: ValidarInput) {
     prompt: `Valida esta idea de negocio con honestidad brutal pero constructiva:
 
 "${input.idea}"
-
+${input.contexto ? `\nContexto real de quien la propone (adapta el análisis a ESTO, no le des una respuesta genérica — sus primeros pasos deben caber en su capital y su tiempo real):\n${input.contexto}\n` : ''}
 Dale una nota del 0 al 10 (0 = mala idea, 10 = oportunidad clara) y JUSTÍFICALA.
 Analiza el mercado (tamaño, si crece o no), la competencia (quién ya lo hace y qué
 hueco queda), a qué público concreto vendérselo primero, los riesgos reales, los
@@ -97,7 +97,7 @@ primeros pasos para validarla YA con poco dinero, y el giro que la haría mejor.
 /* 3. ROAST  — el más viral                                           */
 /* ------------------------------------------------------------------ */
 
-export const RoastInput = z.object({ idea: z.string() });
+export const RoastInput = z.object({ idea: z.string(), contexto: z.string().optional() });
 export type RoastInput = z.infer<typeof RoastInput>;
 
 const RoastOutput = z.object({
@@ -120,7 +120,7 @@ rescatas: dices cómo sí podría funcionar. El objetivo es que dé risa y se co
     prompt: `Hazle un ROAST a esta idea de negocio. Con gracia, honesto y con zasca:
 
 "${input.idea}"
-
+${input.contexto ? `\nContexto real de quien la propone (el rescate final debe ser realista para ESTO, no un consejo genérico):\n${input.contexto}\n` : ''}
 Dale una nota del 0 al 10, lista sus puntos débiles sin filtro, y luego rescátala
 diciendo cómo sí podría funcionar. Termina con una frase corta y compartible para
 redes (con gancho, que dé ganas de mandársela a un colega).`,
@@ -134,6 +134,7 @@ redes (con gancho, que dé ganas de mandársela a un colega).`,
 export const SimuladorInput = z.object({
   negocio: z.string(),
   precio: z.string(), // lo que cobraría (texto libre: "20€/mes", "500€ el proyecto")
+  contexto: z.string().optional(),
 });
 export type SimuladorInput = z.infer<typeof SimuladorInput>;
 
@@ -161,7 +162,7 @@ export function simulador(input: SimuladorInput) {
     prompt: `Haz una proyección de ingresos realista para este negocio:
 - Negocio: ${input.negocio}
 - Lo que cobraría: ${input.precio}
-
+${input.contexto ? `\nContexto real de quien lo monta (los meses para recuperar inversión deben calcularse sobre SU capital, no uno genérico):\n${input.contexto}\n` : ''}
 Da los supuestos en los que te basas, y tres escenarios (Pesimista, Realista,
 Optimista) con nº de clientes al mes, ingresos, costes y beneficio mensual en euros.
 Estima en cuántos meses recuperaría la inversión inicial y qué palancas concretas
@@ -173,7 +174,7 @@ puede mover para ganar más. Sé realista, no vendas humo.`,
 /* 5. RETO 30 DÍAS  — la retención                                    */
 /* ------------------------------------------------------------------ */
 
-export const RetoInput = z.object({ negocio: z.string() });
+export const RetoInput = z.object({ negocio: z.string(), contexto: z.string().optional() });
 export type RetoInput = z.infer<typeof RetoInput>;
 
 const RetoOutput = z.object({
@@ -198,7 +199,7 @@ export function reto(input: RetoInput) {
     prompt: `Diseña un reto de 30 días para lanzar este negocio desde cero:
 
 "${input.negocio}"
-
+${input.contexto ? `\nContexto real de quien lo lanza (las tareas de cada semana deben caber en SU tiempo y su capital, no en uno genérico):\n${input.contexto}\n` : ''}
 Define un objetivo claro y ambicioso pero realista para el día 30 (idealmente:
 primeros clientes o primeros euros). Divide el mes en 4 semanas, cada una con un
 foco y tareas concretas y accionables (nada vago). Termina con el hito que habrá

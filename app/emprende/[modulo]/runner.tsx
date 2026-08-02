@@ -4,11 +4,17 @@ import { getModulo, gradCss, type ModuloSlug } from '@/lib/emprende/catalog';
 import { logRun } from '../stats';
 import { Resultado } from '../resultado';
 import { Ic, type IconName } from '../icons';
+import { getSugerenciaPersonal, getContextoPerfil, type SugerenciaPersonal } from '../personalizacion';
 
 type Val = string | number;
 type Answers = Record<string, Val>;
 
 type Card = { icon: IconName; label: string; hint?: string; value: Val };
+
+// Módulos cuyo primer paso admite la tarjeta "Mi negocio" y cuyo análisis
+// recibe en silencio el contexto real del usuario (capital, tiempo, punto
+// de partida) para que la IA no responda de forma genérica.
+const MODULOS_ADAPTABLES = new Set<ModuloSlug>(['validar', 'roast', 'simulador', 'reto']);
 
 type Step =
   | {
@@ -18,6 +24,7 @@ type Step =
       sub?: string;
       placeholder: string;
       cards?: Card[]; // respuestas rápidas en tarjeta; siempre se puede escribir a mano
+      personalizable?: boolean; // añade la tarjeta "Mi negocio" arriba de las demás
     }
   | {
       field: string;
@@ -96,6 +103,7 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Cuál es tu idea?',
         sub: 'Elige un ejemplo para probar o cuéntame la tuya.',
         placeholder: 'Una app que conecta dueños de perros con paseadores de confianza...',
+        personalizable: true,
         cards: [
           { icon: 'paw', label: 'App de paseadores', hint: 'para dueños de perros', value: 'Una app que conecta dueños de perros con paseadores de confianza cerca de casa' },
           { icon: 'leaf', label: 'Meal prep saludable', hint: 'para oficinistas', value: 'Servicio de comida saludable semanal preparada para oficinistas ocupados' },
@@ -113,6 +121,7 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: 'Cuéntame tu idea. Sin filtros.',
         sub: 'Te diré lo que te diría el mercado: lo bueno, lo flojo y cómo salvarla — antes de que te cueste dinero.',
         placeholder: 'Gestionar las redes sociales de restaurantes de mi ciudad por una cuota mensual...',
+        personalizable: true,
         cards: [
           { icon: 'megaphone', label: 'Agencia de redes', hint: 'para negocios locales', value: 'Gestionar las redes sociales de restaurantes y negocios locales por una cuota mensual' },
           { icon: 'shirt', label: 'Marca de ropa propia', hint: 'venta online', value: 'Lanzar una marca de ropa con diseños propios vendiendo online' },
@@ -131,6 +140,7 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Qué negocio quieres simular?',
         sub: 'Cuéntame qué vendes y a quién.',
         placeholder: 'Agencia de gestión de redes sociales para restaurantes locales',
+        personalizable: true,
         cards: [
           { icon: 'megaphone', label: 'Agencia de redes', hint: 'para restaurantes', value: 'Agencia de gestión de redes sociales para restaurantes locales' },
           { icon: 'globe', label: 'Webs para negocios', hint: 'locales sin web', value: 'Diseño de webs para negocios locales sin presencia online' },
@@ -160,6 +170,7 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
         pregunta: '¿Qué negocio vas a lanzar?',
         sub: 'Te montaré un plan semana a semana.',
         placeholder: 'Tienda online de camisetas con diseños propios',
+        personalizable: true,
         cards: [
           { icon: 'shirt', label: 'Tienda de camisetas', hint: 'diseños propios', value: 'Tienda online de camisetas con diseños propios' },
           { icon: 'coffee', label: 'Cafetería especialidad', hint: 'para llevar', value: 'Cafetería de especialidad para llevar en zona de oficinas' },
@@ -223,7 +234,14 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
   }
 
   async function submit(over?: Answers) {
-    const data = over ?? answers;
+    const data: Answers = { ...(over ?? answers) };
+    // Contexto real del usuario (capital, tiempo, punto de partida) — nunca
+    // se le pregunta ni se le muestra, solo viaja a la IA para que adapte
+    // el análisis a él en vez de darle una respuesta genérica.
+    if (MODULOS_ADAPTABLES.has(slug)) {
+      const contexto = getContextoPerfil();
+      if (contexto) data.contexto = contexto;
+    }
     setLoading(true);
     setError(null);
     setResultado(null);
@@ -370,9 +388,34 @@ export function Runner({ slug }: { slug: ModuloSlug }) {
 
 /* ---------------- Un paso del wizard ---------------- */
 
-function CardBtn({ card, selected, onClick, dashed }: { card: Card; selected?: boolean; onClick: () => void; dashed?: boolean }) {
+function CardBtn({
+  card,
+  selected,
+  onClick,
+  dashed,
+  personal,
+}: {
+  card: Card;
+  selected?: boolean;
+  onClick: () => void;
+  dashed?: boolean;
+  personal?: boolean;
+}) {
   return (
-    <button type="button" className={`emp-choice big ${selected ? 'selected' : ''} ${dashed ? 'dashed' : ''}`} onClick={onClick}>
+    <button
+      type="button"
+      className={`emp-choice big relative ${selected ? 'selected' : ''} ${dashed ? 'dashed' : ''}`}
+      onClick={onClick}
+      style={personal && !selected ? { borderColor: 'rgba(34,211,238,.45)', background: 'rgba(34,211,238,.06)' } : undefined}
+    >
+      {personal && (
+        <span
+          className="absolute -top-2 right-3 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white"
+          style={{ background: 'linear-gradient(90deg,#5b8cff,#22d3ee)' }}
+        >
+          Tu plan
+        </span>
+      )}
       <span className="emp-choice-key" style={{ width: 38, height: 38, borderRadius: 12 }}>
         <Ic name={card.icon} size={19} />
       </span>
@@ -405,8 +448,13 @@ function Paso({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const tieneCards = step.kind !== 'choice' && !!step.cards?.length;
-  const [manual, setManual] = useState(step.kind !== 'choice' && !step.cards?.length);
+  const [personal, setPersonal] = useState<SugerenciaPersonal | null>(null);
+  useEffect(() => {
+    setPersonal(step.kind !== 'choice' && step.personalizable ? getSugerenciaPersonal() : null);
+  }, [step]);
+
+  const tieneCards = step.kind !== 'choice' && (!!step.cards?.length || !!personal);
+  const [manual, setManual] = useState(step.kind !== 'choice' && !step.cards?.length && !step.personalizable);
   const ref = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
 
   useEffect(() => {
@@ -429,7 +477,15 @@ function Paso({
           </div>
         ) : !manual && tieneCards ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            {step.cards!.map((c) => (
+            {personal && (
+              <CardBtn
+                card={{ icon: personal.icon, label: personal.label, hint: personal.hint, value: personal.value }}
+                selected={value === personal.value}
+                onClick={() => onPick(personal.value)}
+                personal
+              />
+            )}
+            {step.cards?.map((c) => (
               <CardBtn key={c.label} card={c} selected={value === c.value} onClick={() => onPick(c.value)} />
             ))}
             <CardBtn card={{ icon: 'pen', label: 'Lo escribo yo', hint: 'con mis palabras', value: '' }} dashed onClick={() => setManual(true)} />
