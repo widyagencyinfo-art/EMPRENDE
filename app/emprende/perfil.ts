@@ -23,7 +23,10 @@ export type Perfil = {
   horasSemana: number;
   bloqueo: string;
   ingresosActuales: number; // €/mes que factura HOY (editable desde el panel)
-  accionesHechas: number[]; // índices de acciones del foco marcadas
+  accionesHechas: number[]; // índices de acciones del plan marcadas
+  accionesFechas?: Record<number, number>; // idx → timestamp de cuándo se completó
+  plan?: 'free' | 'pro';
+  proDesde?: number;
   brief: Brief | null;
   creado: number;
 };

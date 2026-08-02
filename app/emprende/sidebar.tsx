@@ -46,7 +46,20 @@ export function EmprendeSidebar() {
           </span>
           <span className="min-w-0">
             <span className="emp-side-name block text-sm font-semibold truncate">Mi panel</span>
-            <span className="block text-xs emp-dim truncate">Tu rumbo, tu foco y tu historial</span>
+            <span className="block text-xs emp-dim truncate">Tu rumbo, tu foco y tu plan de hoy</span>
+          </span>
+        </Link>
+
+        <Link href="/emprende/calendario" className={cn('emp-side-link', pathname === '/emprende/calendario' && 'active')}>
+          <span
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white"
+            style={{ background: pathname === '/emprende/calendario' ? gradCss(['#22d3ee', '#4ade80']) : 'rgba(34,211,238,.14)' }}
+          >
+            <Ic name="calendar" size={17} />
+          </span>
+          <span className="min-w-0">
+            <span className="emp-side-name block text-sm font-semibold truncate">Calendario</span>
+            <span className="block text-xs emp-dim truncate">Organízate: notas, objetivos y análisis</span>
           </span>
         </Link>
 
@@ -78,10 +91,17 @@ export function EmprendeSidebar() {
       </nav>
 
       <div className="p-4 space-y-3">
-        <CuentaBox />
-        <Link href="/emprende/pro" className="emp-btn w-full text-sm">
-          <Ic name="sparkle" size={15} /> Hazte Pro
+        <Link
+          href="/emprende/config"
+          className={cn('emp-side-link !py-2', pathname === '/emprende/config' && 'active')}
+        >
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white" style={{ background: 'rgba(255,255,255,.07)' }}>
+            <Ic name="settings" size={15} />
+          </span>
+          <span className="emp-side-name text-sm font-semibold">Configuración</span>
         </Link>
+        <CuentaBox />
+        <ProBtn />
       </div>
     </aside>
   );
@@ -151,7 +171,7 @@ function CuentaBox() {
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-semibold text-white truncate">{cuenta.perfil.nombre}</span>
           <span className="block text-[11px] emp-dim truncate">
-            {cuenta.email === 'cuenta-local' ? 'Plan Free · este dispositivo' : `Plan Free · ${cuenta.email}`}
+            {`Plan ${cuenta.perfil.plan === 'pro' ? 'Pro' : 'Free'} · ${cuenta.email === 'cuenta-local' ? 'este dispositivo' : cuenta.email}`}
           </span>
         </span>
         <button
@@ -166,5 +186,23 @@ function CuentaBox() {
         </button>
       </div>
     </div>
+  );
+}
+
+function ProBtn() {
+  const [esPro, setEsPro] = useState(false);
+  useEffect(() => setEsPro(getCuentaActiva()?.perfil.plan === 'pro'), []);
+  if (esPro) {
+    return (
+      <div className="emp-inner p-3 flex items-center gap-2.5" style={{ borderColor: 'rgba(34,211,238,.35)' }}>
+        <Ic name="crown" size={16} className="text-cyan-300 shrink-0" />
+        <span className="text-xs font-semibold text-white">Plan Pro activo</span>
+      </div>
+    );
+  }
+  return (
+    <Link href="/emprende/pro" className="emp-btn w-full text-sm">
+      <Ic name="sparkle" size={15} /> Hazte Pro
+    </Link>
   );
 }

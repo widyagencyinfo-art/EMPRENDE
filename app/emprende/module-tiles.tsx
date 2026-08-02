@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { MODULOS, gradCss } from '@/lib/emprende/catalog';
 import { Ic, type IconName } from './icons';
+import { getPerfil } from './perfil';
 
 // Mueve el halo radial hacia el cursor actualizando --mx/--my.
 function onMove(e: React.MouseEvent<HTMLElement>) {
@@ -11,9 +13,18 @@ function onMove(e: React.MouseEvent<HTMLElement>) {
 }
 
 export function ModuleTiles() {
+  // Si ya tiene negocio, "¿Qué negocio montar?" pasa al final como plan B.
+  const [tieneNegocio, setTieneNegocio] = useState(false);
+  useEffect(() => {
+    const p = getPerfil();
+    setTieneNegocio(!!p && !p.area.toLowerCase().includes('explorando'));
+  }, []);
+  const modulos = tieneNegocio
+    ? [...MODULOS.filter((m) => m.slug !== 'que-negocio'), ...MODULOS.filter((m) => m.slug === 'que-negocio')]
+    : [...MODULOS];
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 emp-stagger">
-      {MODULOS.map((m) => (
+      {modulos.map((m) => (
         <Link
           key={m.slug}
           href={`/emprende/${m.slug}`}
@@ -29,7 +40,9 @@ export function ModuleTiles() {
             <Ic name={m.icon as IconName} size={24} />
           </span>
           <h3 className="font-semibold text-[15px] text-white">{m.nombre}</h3>
-          <p className="text-sm emp-dim mt-1 leading-snug">{m.tagline}</p>
+          <p className="text-sm emp-dim mt-1 leading-snug">
+            {tieneNegocio && m.slug === 'que-negocio' ? '¿Pivotar o abrir otra línea? Explora tu plan B' : m.tagline}
+          </p>
         </Link>
       ))}
 

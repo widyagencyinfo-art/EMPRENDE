@@ -18,7 +18,7 @@ const PLANES = [
   },
   {
     nombre: 'Pro',
-    precio: '19€',
+    precio: '14,99€',
     periodo: '/mes',
     destacado: true,
     features: [
@@ -29,20 +29,20 @@ const PLANES = [
       'Sin marca de agua + export PDF',
     ],
     cta: 'Hazte Pro',
-    href: '#',
+    href: '/emprende/pro/checkout?plan=pro',
   },
   {
     nombre: 'Anual',
-    precio: '149€',
+    precio: '59,99€',
     periodo: '/año',
     destacado: false,
     features: [
       'Todo lo del plan Pro',
-      'Ahorras un 35% (2 meses gratis)',
+      'Sale a 5 €/mes (ahorras un 66%)',
       'Acceso anticipado a novedades',
     ],
     cta: 'Ahorrar con Anual',
-    href: '#',
+    href: '/emprende/pro/checkout?plan=anual',
   },
 ];
 
@@ -126,8 +126,8 @@ export default function ProPage() {
       </div>
 
       <p className="text-center text-xs emp-dim mt-8">
-        El pago con Stripe se conecta en el siguiente paso — la fontanería de
-        suscripciones ya está montada en el proyecto.
+        Empieza con 7 días de Pro gratis, sin tarjeta. El pago con Stripe se
+        activa muy pronto.
       </p>
     </div>
   );

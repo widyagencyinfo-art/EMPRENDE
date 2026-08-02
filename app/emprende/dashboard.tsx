@@ -67,8 +67,8 @@ function Panel({ perfil, runs, onChange }: { perfil: Perfil; runs: RunLog[]; onC
       {/* Rumbo al objetivo (capital) */}
       <CapitalCard perfil={perfil} onChange={onChange} />
 
-      {/* Foco de la semana */}
-      {perfil.brief && <FocoCard perfil={perfil} onChange={onChange} />}
+      {/* Plan día a día */}
+      {perfil.brief && <PlanCard perfil={perfil} onChange={onChange} />}
 
       {/* KPIs */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 mt-4 emp-stagger">
@@ -186,53 +186,144 @@ function CapitalCard({ perfil, onChange }: { perfil: Perfil; onChange: () => voi
   );
 }
 
-/* ---------- Foco de la semana ---------- */
+/* ---------- Plan día a día ---------- */
 
-function FocoCard({ perfil, onChange }: { perfil: Perfil; onChange: () => void }) {
+function PlanCard({ perfil, onChange }: { perfil: Perfil; onChange: () => void }) {
   const brief = perfil.brief!;
   const hechas = new Set(perfil.accionesHechas);
   const [verDiagnostico, setVerDiagnostico] = useState(false);
+  const [regenerando, setRegenerando] = useState(false);
+
+  const pendientes = brief.acciones.map((a, i) => ({ a, i })).filter(({ i }) => !hechas.has(i));
+  const completadas = brief.acciones.length - pendientes.length;
+  const hoy = pendientes[0] ?? null;
+  const siguientes = pendientes.slice(1);
+  const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' });
 
   function toggle(idx: number) {
-    const nuevas = hechas.has(idx)
-      ? perfil.accionesHechas.filter((x) => x !== idx)
-      : [...perfil.accionesHechas, idx];
-    updatePerfil({ accionesHechas: nuevas });
+    const esHecha = hechas.has(idx);
+    const nuevas = esHecha ? perfil.accionesHechas.filter((x) => x !== idx) : [...perfil.accionesHechas, idx];
+    const fechas = { ...(perfil.accionesFechas ?? {}) };
+    if (esHecha) delete fechas[idx];
+    else fechas[idx] = Date.now();
+    updatePerfil({ accionesHechas: nuevas, accionesFechas: fechas });
     onChange();
   }
 
-  const completadas = brief.acciones.filter((_, i) => hechas.has(i)).length;
+  async function regenerar() {
+    setRegenerando(true);
+    try {
+      const res = await fetch('/api/emprende/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: perfil.nombre,
+          area: perfil.area,
+          experiencia: `${perfil.experiencia}. Ya completó su plan anterior (foco: ${brief.focoSemana}) y factura ${perfil.ingresosActuales}€/mes.`,
+          dineroDisponible: perfil.dineroDisponible,
+          objetivoMensual: perfil.objetivoMensual,
+          horasSemana: perfil.horasSemana,
+          bloqueo: perfil.bloqueo,
+        }),
+      });
+      const j = await res.json();
+      if (res.ok) {
+        updatePerfil({ brief: j.resultado, accionesHechas: [], accionesFechas: {} });
+        onChange();
+      }
+    } finally {
+      setRegenerando(false);
+    }
+  }
 
   return (
     <div className="emp-card p-6 mt-4">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <h3 className="font-bold text-white flex items-center gap-2">
-          <Ic name="target" size={17} className="emp-dim" /> Tu foco de esta semana
+          <Ic name="target" size={17} className="emp-dim" /> Tu plan, día a día
         </h3>
-        <span className="text-xs emp-dim">{completadas}/{brief.acciones.length} acciones</span>
+        <span className="text-xs emp-dim">{completadas}/{brief.acciones.length} hechas</span>
       </div>
 
-      <p className="text-lg md:text-xl font-bold emp-grad-text leading-snug">{brief.focoSemana}</p>
+      <p className="text-base md:text-lg font-bold emp-grad-text leading-snug">{brief.focoSemana}</p>
 
-      <div className="mt-4 space-y-2">
-        {brief.acciones.map((a, i) => {
-          const done = hechas.has(i);
-          return (
-            <button key={i} onClick={() => toggle(i)} className="w-full text-left emp-inner px-3.5 py-2.5 flex items-start gap-3 hover:border-white/20 transition-colors">
-              <span
-                className="grid h-5 w-5 place-items-center rounded-md border shrink-0 mt-0.5 transition-colors"
-                style={done ? { background: gradCss(['#22c55e', '#14b8a6']), borderColor: 'transparent' } : { borderColor: 'rgba(255,255,255,.25)' }}
-              >
-                {done && <Ic name="check" size={12} className="text-white" />}
+      {hoy ? (
+        <>
+          {/* Objetivo de HOY */}
+          <div
+            className="mt-4 rounded-2xl p-4 border relative overflow-hidden"
+            style={{ borderColor: 'rgba(34,211,238,.35)', background: 'linear-gradient(120deg, rgba(91,140,255,.14), rgba(34,211,238,.10))' }}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+                <Ic name="zap" size={12} /> Objetivo de hoy · {fechaHoy}
               </span>
-              <span className={`text-sm ${done ? 'line-through emp-dim' : 'text-white/90'}`}>{a}</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <button
+                onClick={() => toggle(hoy.i)}
+                className="grid h-6 w-6 place-items-center rounded-lg border shrink-0 mt-0.5 transition-colors hover:border-cyan-300"
+                style={{ borderColor: 'rgba(255,255,255,.3)' }}
+                title="Marcar como hecho"
+              />
+              <p className="text-[15px] font-semibold text-white leading-snug">{hoy.a}</p>
+            </div>
+            <button onClick={() => toggle(hoy.i)} className="emp-btn text-xs px-4 py-2 mt-3">
+              <Ic name="check" size={13} /> Hecho
             </button>
-          );
-        })}
-      </div>
+          </div>
+
+          {/* Los siguientes días */}
+          {siguientes.length > 0 && (
+            <div className="mt-3">
+              <div className="text-[11px] emp-dim mb-2 font-semibold uppercase tracking-wider">Después</div>
+              <div className="space-y-2">
+                {siguientes.map(({ a, i }) => (
+                  <button key={i} onClick={() => toggle(i)} className="w-full text-left emp-inner px-3.5 py-2.5 flex items-start gap-3 hover:border-white/20 transition-colors opacity-80">
+                    <span className="grid h-5 w-5 place-items-center rounded-md border shrink-0 mt-0.5" style={{ borderColor: 'rgba(255,255,255,.2)' }} />
+                    <span className="text-sm text-white/75">{a}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="text-[11px] emp-dim mt-3">
+            Lo que no termines hoy pasa a mañana automáticamente — sin dramas, pero sin escaparse.
+          </p>
+        </>
+      ) : (
+        /* Plan completado → generar el siguiente */
+        <div className="mt-4 rounded-2xl p-5 border text-center" style={{ borderColor: 'rgba(34,197,94,.35)', background: 'rgba(34,197,94,.08)' }}>
+          <Ic name="medal" size={26} className="text-emerald-400 mx-auto mb-2" />
+          <p className="font-bold text-white">Plan completado. Enorme.</p>
+          <p className="text-sm emp-dim mt-1">Toca subir el listón: pide a la IA tu siguiente plan.</p>
+          <button onClick={regenerar} disabled={regenerando} className="emp-btn text-sm mt-4 px-6">
+            {regenerando ? 'Creando tu siguiente plan...' : 'Generar mi siguiente plan'}
+          </button>
+        </div>
+      )}
+
+      {/* Completadas (colapsadas) */}
+      {completadas > 0 && hoy && (
+        <details className="mt-3">
+          <summary className="text-xs emp-dim cursor-pointer hover:text-white transition-colors">
+            ✓ {completadas} completada{completadas === 1 ? '' : 's'}
+          </summary>
+          <div className="mt-2 space-y-1.5">
+            {brief.acciones.map((a, i) =>
+              hechas.has(i) ? (
+                <button key={i} onClick={() => toggle(i)} className="w-full text-left text-xs emp-dim line-through px-3 py-1.5 hover:text-white/70">
+                  {a}
+                </button>
+              ) : null
+            )}
+          </div>
+        </details>
+      )}
 
       <div className="mt-4 rounded-2xl p-4 border" style={{ borderColor: 'rgba(34,211,238,.25)', background: 'linear-gradient(120deg, rgba(91,140,255,.12), rgba(34,211,238,.08))' }}>
-        <p className="text-sm text-white/85 italic">“{brief.consejo}”</p>
+        <p className="text-sm text-white/85 italic">"{brief.consejo}"</p>
       </div>
 
       <button onClick={() => setVerDiagnostico(!verDiagnostico)} className="text-xs emp-dim mt-3 hover:text-white transition-colors">

@@ -253,7 +253,9 @@ export function brief(input: BriefInput) {
 Hazle su plan de arranque personalizado. Háblale de tú, por su nombre al menos
 una vez. El diagnóstico debe ser honesto con su situación real (capital, tiempo,
 punto de partida vs objetivo). El foco de la semana es UNA sola cosa, imperativa
-y concreta. Las acciones son de esta semana, no genéricas. La ruta son 3-4 hitos
+y concreta. Las acciones son EXACTAMENTE 5, una por día (día 1 a día 5, empezando
+hoy), ordenadas de más fácil a más ambiciosa, cada una empezando por "Día N:" y
+completable en una tarde con las horas que tiene. Nada genérico. La ruta son 3-4 hitos
 progresivos y realistas desde donde está HOY hasta su objetivo de ${input.objetivoMensual}€/mes
 (el primero debe ser alcanzable en días o pocas semanas). El consejo, directo al
 grano según su bloqueo.`,

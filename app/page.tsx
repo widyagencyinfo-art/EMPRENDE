@@ -291,8 +291,8 @@ export default function LandingPage() {
         <div className="grid gap-5 md:grid-cols-3 items-start max-w-4xl mx-auto emp-stagger">
           {[
             { n: 'Free', p: '0€', per: 'para siempre', f: ['Tu plan de arranque', 'Validación diaria', 'Roast + qué negocio montar'], top: false },
-            { n: 'Pro', p: '19€', per: '/mes', f: ['Todo sin límites', 'Simulador + reto 30 días', 'Sin marca + export PDF', 'Mentor IA (próximamente)'], top: true },
-            { n: 'Anual', p: '149€', per: '/año', f: ['Todo lo de Pro', '2 meses gratis (-35%)', 'Novedades antes que nadie'], top: false },
+            { n: 'Pro', p: '14,99€', per: '/mes', f: ['Todo sin límites', 'Simulador + reto 30 días', 'Sin marca + export PDF', 'Mentor IA (próximamente)'], top: true },
+            { n: 'Anual', p: '59,99€', per: '/año', f: ['Todo lo de Pro', 'Sale a 5 €/mes (-66%)', 'Novedades antes que nadie'], top: false },
           ].map((pl) => (
             <div
               key={pl.n}

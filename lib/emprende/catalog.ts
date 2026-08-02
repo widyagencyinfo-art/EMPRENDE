@@ -23,8 +23,8 @@ export const MODULOS = [
   },
   {
     slug: 'roast',
-    nombre: 'Roast a tu idea',
-    tagline: 'La IA sin filtros te destroza (y te rescata)',
+    nombre: 'Prueba de fuego',
+    tagline: 'La crítica dura que te ahorra meses y dinero',
     icon: 'flame',
     grad: ['#f43f5e', '#fb923c'],
   },

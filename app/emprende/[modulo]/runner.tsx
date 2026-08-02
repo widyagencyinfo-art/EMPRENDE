@@ -105,17 +105,19 @@ const FLOWS: Record<ModuloSlug, { steps: Step[]; cta: string }> = {
     ],
   },
   roast: {
-    cta: 'Que me destrocen',
+    cta: 'Quiero la verdad',
     steps: [
       {
         field: 'idea',
         kind: 'textarea',
-        pregunta: 'Suéltala. Sin miedo.',
-        sub: 'Cuanto más honesto seas, más duro (y útil) será el roast.',
-        placeholder: 'Vender cubitos de hielo premium para gente ocupada...',
+        pregunta: 'Cuéntame tu idea. Sin filtros.',
+        sub: 'Te diré lo que te diría el mercado: lo bueno, lo flojo y cómo salvarla — antes de que te cueste dinero.',
+        placeholder: 'Gestionar las redes sociales de restaurantes de mi ciudad por una cuota mensual...',
         cards: [
-          { icon: 'cube', label: 'Hielo premium', hint: 'para gente ocupada', value: 'Vender cubitos de hielo premium para gente ocupada' },
-          { icon: 'paw', label: 'Red social de gatos', hint: 'solo para gatos', value: 'Una red social solo para gatos' },
+          { icon: 'megaphone', label: 'Agencia de redes', hint: 'para negocios locales', value: 'Gestionar las redes sociales de restaurantes y negocios locales por una cuota mensual' },
+          { icon: 'shirt', label: 'Marca de ropa propia', hint: 'venta online', value: 'Lanzar una marca de ropa con diseños propios vendiendo online' },
+          { icon: 'code', label: 'App de reservas', hint: 'peluquerías y barberías', value: 'Una app para reservar cita en peluquerías y barberías del barrio' },
+          { icon: 'utensils', label: 'Comida a domicilio', hint: 'menús saludables', value: 'Menús saludables semanales a domicilio para oficinistas' },
         ],
       },
     ],

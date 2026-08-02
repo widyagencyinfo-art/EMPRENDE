@@ -10,7 +10,8 @@ const PATHS = {
   // marca / navegación
   logo: (
     <>
-      <path d="M5 19L12 4l7 15-7-3.5L5 19Z" fill="currentColor" stroke="none" />
+      <path d="M12 3.5 19 11h-4.2v6.5a1 1 0 0 1-1 1h-3.6a1 1 0 0 1-1-1V11H5l7-7.5Z" fill="currentColor" stroke="none" />
+      <path d="M8.2 20.5h7.6" strokeWidth="2.4" />
     </>
   ),
   home: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5" />,
@@ -179,6 +180,19 @@ const PATHS = {
     </>
   ),
   lightbulb: <path d="M9 18h6m-5 3h4m3-11a5 5 0 1 0-8.5 3.5c.8.8 1.5 1.5 1.5 2.5h4c0-1 .7-1.7 1.5-2.5A5 5 0 0 0 17 10Z" />,
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19 12c0-.6-.1-1.1-.2-1.6l2-1.5-2-3.4-2.3 1a7.4 7.4 0 0 0-2.7-1.6L13.4 2h-3l-.4 2.5a7.4 7.4 0 0 0-2.7 1.6l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3.2l-2 1.5 2 3.4 2.3-1a7.4 7.4 0 0 0 2.7 1.6l.4 2.5h3l.4-2.5a7.4 7.4 0 0 0 2.7-1.6l2.3 1 2-3.4-2-1.5c.1-.5.2-1 .2-1.6Z" />
+    </>
+  ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" />
+      <path d="M3 10h18M8 3v4m8-4v4M7.5 14h.01M12 14h.01M16.5 14h.01M7.5 17.5h.01M12 17.5h.01" />
+    </>
+  ),
+  crown: <path d="M4 18h16M4 18 3 7l5 4 4-7 4 7 5-4-1 11H4Z" />,
 } as const;
 
 export function Ic({
