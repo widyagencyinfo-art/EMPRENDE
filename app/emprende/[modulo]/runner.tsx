@@ -4,7 +4,7 @@ import { getModulo, gradCss, type ModuloSlug } from '@/lib/emprende/catalog';
 import { logRun } from '../stats';
 import { Resultado } from '../resultado';
 import { Ic, type IconName } from '../icons';
-import { getSugerenciaPersonal, getContextoPerfil, type SugerenciaPersonal } from '../personalizacion';
+import { getSugerenciaPersonal, getEjemplosPersonalizados, getContextoPerfil, type SugerenciaPersonal } from '../personalizacion';
 
 type Val = string | number;
 type Answers = Record<string, Val>;
@@ -449,11 +449,16 @@ function Paso({
   onBack: () => void;
 }) {
   const [personal, setPersonal] = useState<SugerenciaPersonal | null>(null);
+  const [ejemplos, setEjemplos] = useState<Card[] | null>(null);
   useEffect(() => {
-    setPersonal(step.kind !== 'choice' && step.personalizable ? getSugerenciaPersonal() : null);
+    const personalizable = step.kind !== 'choice' && step.personalizable;
+    setPersonal(personalizable ? getSugerenciaPersonal() : null);
+    setEjemplos(personalizable ? getEjemplosPersonalizados() : null);
   }, [step]);
 
-  const tieneCards = step.kind !== 'choice' && (!!step.cards?.length || !!personal);
+  // Ejemplos ajustados a la categoría del usuario si existen; si no, los genéricos del módulo.
+  const cardsAMostrar = step.kind !== 'choice' ? ejemplos ?? step.cards : undefined;
+  const tieneCards = step.kind !== 'choice' && (!!cardsAMostrar?.length || !!personal);
   const [manual, setManual] = useState(step.kind !== 'choice' && !step.cards?.length && !step.personalizable);
   const ref = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
 
@@ -485,7 +490,7 @@ function Paso({
                 personal
               />
             )}
-            {step.cards?.map((c) => (
+            {cardsAMostrar?.map((c) => (
               <CardBtn key={c.label} card={c} selected={value === c.value} onClick={() => onPick(c.value)} />
             ))}
             <CardBtn card={{ icon: 'pen', label: 'Lo escribo yo', hint: 'con mis palabras', value: '' }} dashed onClick={() => setManual(true)} />
